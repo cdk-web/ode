@@ -189,7 +189,7 @@ export class App extends React.Component<AppProps, AppState> {
       controlCenterSplits: [{ min: 100 }, { min: 40, value: 256 }],
       editorSplits: [],
       showProblems: true,
-      showSandbox: props.embeddingParams.type !== EmbeddingType.Arc,
+      showSandbox: false,
       uploadFileDialogDirectory: null,
       newDirectoryDialog: null,
       tabGroups: null,
