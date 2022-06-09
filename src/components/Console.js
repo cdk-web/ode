@@ -5,21 +5,9 @@ import PropTypes from "prop-types";
 import { Terminal } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
 import XtermJSShell from "xterm-js-shell";
-import { css } from "@emotion/react";
 import * as console from "./console";
 
 import "xterm/css/xterm.css";
-
-const styles = css`
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
-
-  .xterm .xterm-viewport {
-    overflow-y: hidden !important;
-  }
-`;
 
 export default class Console extends React.Component {
   state = {
@@ -131,12 +119,12 @@ export default class Console extends React.Component {
     return (
       <ReactResizeDetector handleWidth handleHeight skipOnMount={true} onResize={this.refit}>
         {({ height, targetRef }) => (
-          <div ref={targetRef} css={styles}>
+          <div ref={targetRef} style={{ width: "100%", height: "100%", display: 'block', background: "#000" }}>
             <div
               ref={this.handleConsoleRef}
               style={{
                 width: "100%",
-                height: height ? height - this.props.tabSize : "100%",
+                height: height ? height : "100%",
                 padding: this.props.padding,
                 boxSizing: "border-box",
               }}
