@@ -25,7 +25,7 @@ import appStore from "../stores/AppStore";
 import { layout } from "../util";
 import { EditorView, Tab, Tabs, View } from "./editor";
 import { Problems } from "./Problems";
-import Console from "./Console";
+import { Console } from "./Console";
 import { Sandbox } from "./Sandbox";
 import { Button } from "./shared/Button";
 import { GoThreeBars } from "./shared/Icons";
@@ -35,6 +35,7 @@ export class ControlCenter extends React.Component<
   {
     onToggle?: Function;
     showSandbox: boolean;
+    terminalApplications: any[];
   },
   {
     /**
