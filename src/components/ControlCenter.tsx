@@ -25,17 +25,19 @@ import appStore from "../stores/AppStore";
 import { layout } from "../util";
 import { EditorView, Tab, Tabs, View } from "./editor";
 import { Problems } from "./Problems";
-import { Console } from "./Console";
+import { Console, Application } from "./Console";
 import { Sandbox } from "./Sandbox";
 import { Button } from "./shared/Button";
 import { GoThreeBars } from "./shared/Icons";
 import { Split, SplitInfo, SplitOrientation } from "./Split";
 
+export { Application } from "./Console";
+
 export class ControlCenter extends React.Component<
   {
     onToggle?: Function;
     showSandbox: boolean;
-    terminalApplications: any[];
+    terminalApplications: Application[];
   },
   {
     /**
@@ -118,7 +120,7 @@ export class ControlCenter extends React.Component<
         return <Problems />;
       case "terminal":
         // @ts-ignore
-        return <Console />;
+        return <Console applications={this.state.terminalApplications} />;
       default:
         return null;
     }

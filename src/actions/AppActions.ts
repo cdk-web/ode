@@ -209,6 +209,7 @@ export interface OpenFilesAction extends AppAction {
 }
 
 export async function openProjectFiles(template: Template) {
+  debugger;
   const newProject = new Project();
   await Service.loadFilesIntoProject(template.files, newProject, template.baseUrl);
   dispatcher.dispatch({

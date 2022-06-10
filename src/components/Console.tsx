@@ -21,7 +21,9 @@ const styles = css`
   }
 `;
 
-export interface Application {}
+export interface Application {
+  init(shell: typeof XtermJSShell): void;
+}
 
 interface State {
   shell?: typeof XtermJSShell;
@@ -50,7 +52,7 @@ class ConsoleTerminal extends Terminal {
 
 export class Console extends React.Component<
   {
-    applications: [];
+    applications: Application[];
     tabSize: number;
     padding: string;
   },
@@ -93,7 +95,7 @@ export class Console extends React.Component<
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
     console.registerApplications(shell);
-    this.props.applications.forEach((application: (shell: any) => {}) => application(shell));
+    this.props.applications.forEach((application: Application) => application.init(shell));
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
     const read = shell.echo.read.bind(shell.echo);
