@@ -1,43 +1,15 @@
 import _ from "lodash";
 import React from "react";
-import assert from "assert";
 import PropTypes from "prop-types";
 import { Terminal } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
 import XtermJSShell from "xterm-js-shell";
-import * as console from "./console";
+import * as appRegistry from "./console";
 
 import "xterm/css/xterm.css";
 
-export default class Console extends React.Component {
-  state = {
-    /** @type {XtermJSShell} */
-    shell: null,
-    /** @type {Terminal} */
-    terminal: null,
-  };
-
-  static propTypes = {
-    tabSize: PropTypes.number.isRequired,
-    padding: PropTypes.number,
-    applications: PropTypes.arrayOf(PropTypes.func),
-  };
-
-  static defaultProps = {
-    padding: 5,
-    applications: [],
-  };
-
-  handleConsoleData = (data) => {
-    assert.ok(this.state.shell);
-    assert.ok(_.isString(data));
-    // this api prints into xterm
-    this.state.shell.printLine(data);
-    this.refit();
-  };
-
-  handleConsoleRef = (el) => {
-    if (!el) return this.cleanup();
+class ConsoleProcess {
+  constructor(el, applications) {
     const terminal = new Terminal({ cursorBlink: true });
     // XtermJSShell uses eventemitter api, here we do a conversion
     terminal.listeners = [];
@@ -54,8 +26,8 @@ export default class Console extends React.Component {
     // XtermJSShell is older than our xterm and needs some patches
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
-    console.registerApplications(shell);
-    this.props.applications.forEach((application) => application(shell));
+    appRegistry.registerApplications(shell);
+    applications.forEach((application) => application(shell));
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
     const read = shell.echo.read.bind(shell.echo);
@@ -83,55 +55,81 @@ export default class Console extends React.Component {
     };
     shell.repl();
     terminal.open(el);
-    console.addons.register(terminal);
-    this.setState({ shell, terminal });
+    appRegistry.addons.register(terminal);
+    this.terminal = terminal;
+    this.shell = shell;
     this.refit();
+  }
+
+  refit() {
+    if (this.terminal) {
+      this.terminal.refit();
+      this.terminal.focus();
+    }
+  }
+
+  dispose() {
+    if (this.shell) {
+      this.shell.detach();
+      delete this.shell;
+    }
+    if (this.terminal) {
+      this.terminal.dispose();
+      delete this.terminal;
+    }
+  }
+}
+
+export default class Console extends React.Component {
+  static propTypes = {
+    applications: PropTypes.arrayOf(PropTypes.func),
+  };
+
+  static defaultProps = {
+    applications: [],
+  };
+
+  state = { process: null };
+
+  handleConsoleRef = (el) => {
+    if (!el) this.dispose();
+    this.setState({ process: new ConsoleProcess(el, this.props.applications) });
   };
 
   refit = () => {
-    if (this.state.terminal) {
-      this.state.terminal.refit();
-      this.state.terminal.focus();
+    if (this.state.process) {
+      this.state.process.refit();
     }
   };
 
-  cleanup() {
-    if (this.state.shell) {
-      delete this.state.shell.currentLine;
-      this.state.shell.detach();
-      this.setState({ shell: null });
+  dispose = () => {
+    if (this.state.process) {
+      this.state.process.dispose();
+      this.setState({ process: null });
     }
-    if (this.state.terminal) {
-      this.state.terminal.dispose();
-      this.setState({ terminal: null });
-    }
-  }
+  };
 
-  componentWillUnmount() {
-    this.cleanup();
-  }
-
-  componentDidMount() {
-    this.refit();
-  }
+  componentDidMount = this.refit;
+  componentWillUnmount = this.dispose;
 
   render() {
     return (
-      <ReactResizeDetector handleWidth handleHeight skipOnMount={true} onResize={this.refit}>
-        {({ height, targetRef }) => (
-          <div ref={targetRef} style={{ width: "100%", height: "100%", display: 'block', background: "#000" }}>
+      <div style={{ backgroundColor: "#000", width: "100%", height: "100%" }}>
+        <ReactResizeDetector handleWidth handleHeight onResize={this.refit}>
+          {
             <div
               ref={this.handleConsoleRef}
               style={{
                 width: "100%",
-                height: height ? height : "100%",
-                padding: this.props.padding,
+                height: "calc(100% - 15px)",
                 boxSizing: "border-box",
+                background: "#000",
+                padding: 10,
               }}
             ></div>
-          </div>
-        )}
-      </ReactResizeDetector>
+          }
+        </ReactResizeDetector>
+      </div>
     );
   }
 }
