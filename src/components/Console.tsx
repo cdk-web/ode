@@ -77,7 +77,7 @@ export class Console extends React.Component<
   };
 
   handleConsoleRef = (el: HTMLElement) => {
-    if (!el) return this.cleanup();
+    if (!el) return; // this.cleanup();
     const terminal = new ConsoleTerminal({ cursorBlink: true });
     // XtermJSShell is older than our xterm and needs some patches
     const shell = new XtermJSShell(terminal);
