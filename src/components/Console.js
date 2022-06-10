@@ -92,7 +92,7 @@ export default class Console extends React.Component {
   state = { process: null };
 
   handleConsoleRef = (el) => {
-    if (!el) this.dispose();
+    if (!el) return;
     this.setState({ process: new ConsoleProcess(el, this.props.applications) });
   };
 
