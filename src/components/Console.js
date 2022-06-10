@@ -115,8 +115,7 @@ export default class Console extends React.Component {
   render() {
     return (
       <div style={{ backgroundColor: "#000", width: "100%", height: "100%" }}>
-        <ReactResizeDetector handleWidth handleHeight onResize={this.refit}>
-          {
+        <ReactResizeDetector handleWidth handleHeigh onResize={this.refit}>
             <div
               ref={this.handleConsoleRef}
               style={{
@@ -127,7 +126,6 @@ export default class Console extends React.Component {
                 padding: 10,
               }}
             ></div>
-          }
         </ReactResizeDetector>
       </div>
     );
