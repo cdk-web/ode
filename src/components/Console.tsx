@@ -146,19 +146,16 @@ export class Console extends React.Component<
   render() {
     return (
       <ReactResizeDetector handleWidth handleHeight skipOnMount={true} onResize={this.refit}>
-        {({ height, targetRef }) => (
-          <div ref={targetRef as any} style={{ width: "100%", height: "100%", display: "block", background: "#000" }}>
-            <div
-              ref={this.handleConsoleRef}
-              style={{
-                width: "100%",
-                height: height ? height : "100%",
-                padding: this.props.padding,
-                boxSizing: "border-box",
-              }}
-            ></div>
-          </div>
-        )}
+        <div
+          ref={this.handleConsoleRef}
+          style={{
+            width: "100%",
+            height: "calc(100% - 15px)",
+            boxSizing: "border-box",
+            background: "#000",
+            padding: 10,
+          }}
+        ></div>
       </ReactResizeDetector>
     );
   }
