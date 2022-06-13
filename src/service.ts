@@ -20,8 +20,25 @@
  */
 import { createCompilerService, Language } from "./compilerServices";
 import { IWorkerResponse, WorkerCommand } from "./message";
-import { Directory, File, FileType, fileTypeFromFileName, isBinaryFileType, IStatusProvider, Problem, Project } from "./models";
-import { assert, base64EncodeBytes, decodeRestrictedBase64ToBytes, isBranch, padLeft, padRight, toAddress } from "./util";
+import {
+  Directory,
+  File,
+  FileType,
+  fileTypeFromFileName,
+  isBinaryFileType,
+  IStatusProvider,
+  Problem,
+  Project,
+} from "./models";
+import {
+  assert,
+  base64EncodeBytes,
+  decodeRestrictedBase64ToBytes,
+  isBranch,
+  padLeft,
+  padRight,
+  toAddress,
+} from "./util";
 import { gaEvent } from "./utils/ga";
 import { processJSFile, RewriteSourcesContext } from "./utils/rewriteSources";
 import { getCurrentRunnerInfo } from "./utils/taskRunner";
@@ -32,7 +49,7 @@ declare var capstone: {
   Cs: any;
 };
 
-declare var Module: ({ }) => any;
+declare var Module: ({}) => any;
 
 declare var showdown: {
   Converter: any;
@@ -46,11 +63,11 @@ export interface IFiddleFile {
 }
 
 export interface ICreateFiddleRequest {
-  files: IFiddleFile [];
+  files: IFiddleFile[];
 }
 
 export interface ILoadFiddleResponse {
-  files: IFiddleFile [];
+  files: IFiddleFile[];
   id: string;
   message: string;
   success: boolean;
@@ -65,14 +82,14 @@ function getProjectFilePath(file: File): string {
 
 export class ServiceWorker {
   worker: Worker;
-  workerCallbacks: Array<{fn: (data: any) => void, ex: (err: Error) => void}> = [];
+  workerCallbacks: Array<{ fn: (data: any) => void; ex: (err: Error) => void }> = [];
   nextId = 0;
   private getNextId() {
     return String(this.nextId++);
   }
   constructor() {
     this.worker = new Worker("dist/worker.bundle.js");
-    this.worker.addEventListener("message", (e: {data: IWorkerResponse}) => {
+    this.worker.addEventListener("message", (e: { data: IWorkerResponse }) => {
       if (!e.data.id) {
         return;
       }
@@ -80,10 +97,7 @@ export class ServiceWorker {
       if (e.data.success) {
         cb.fn(e.data.payload);
       } else {
-        const error = Object.assign(
-          Object.create(Error.prototype),
-          e.data.payload,
-        );
+        const error = Object.assign(Object.create(Error.prototype), e.data.payload);
         cb.ex(error);
       }
       this.workerCallbacks[e.data.id] = null;
@@ -92,20 +106,29 @@ export class ServiceWorker {
 
   setWorkerCallback(id: string, fn: (e: any) => void, ex?: (e: any) => void) {
     assert(!this.workerCallbacks[id as any]);
-    this.workerCallbacks[id as any] = {fn, ex};
+    this.workerCallbacks[id as any] = { fn, ex };
   }
 
   async postMessage(command: WorkerCommand, payload: any): Promise<any> {
     return new Promise((resolve, reject) => {
       const id = this.getNextId();
-      this.setWorkerCallback(id, (data: any) => {
-        resolve(data);
-      }, (err: Error) => {
-        reject(err);
-      });
-      this.worker.postMessage({
-        id, command, payload
-      }, undefined);
+      this.setWorkerCallback(
+        id,
+        (data: any) => {
+          resolve(data);
+        },
+        (err: Error) => {
+          reject(err);
+        }
+      );
+      this.worker.postMessage(
+        {
+          id,
+          command,
+          payload,
+        },
+        undefined
+      );
     });
   }
 
@@ -170,10 +193,12 @@ export class Service {
           severity = monaco.MarkerSeverity.Warning;
         }
         annotations.push({
-          severity, message,
+          severity,
+          message,
           startLineNumber: startLineNumber,
           startColumn: startColumn,
-          endLineNumber: startLineNumber, endColumn: startColumn
+          endLineNumber: startLineNumber,
+          endColumn: startColumn,
         });
       }
       // Range. This is generated via the -diagnostics-print-source-range-info
@@ -191,21 +216,29 @@ export class Service {
           severity = monaco.MarkerSeverity.Warning;
         }
         annotations.push({
-          severity, message,
-          startLineNumber: parseInt(m[1], 10), startColumn: parseInt(m[2], 10),
-          endLineNumber: parseInt(m[3], 10), endColumn: parseInt(m[4], 10)
+          severity,
+          message,
+          startLineNumber: parseInt(m[1], 10),
+          startColumn: parseInt(m[2], 10),
+          endLineNumber: parseInt(m[3], 10),
+          endColumn: parseInt(m[4], 10),
         });
       }
     }
     return annotations;
   }
 
-  static async compileFiles(files: File[], from: Language, to: Language, options = ""): Promise<{ [name: string]: (string|ArrayBuffer); }> {
+  static async compileFiles(
+    files: File[],
+    from: Language,
+    to: Language,
+    options = ""
+  ): Promise<{ [name: string]: string | ArrayBuffer }> {
     gaEvent("compile", "Service", `${from}->${to}`);
 
     const service = await createCompilerService(from, to);
 
-    const fileNameMap: {[name: string]: File} = files.reduce((acc: any, f: File) => {
+    const fileNameMap: { [name: string]: File } = files.reduce((acc: any, f: File) => {
       acc[getProjectFilePath(f)] = f;
       return acc;
     }, {} as any);
@@ -225,7 +258,7 @@ export class Service {
       file.setProblems([]);
     }
 
-    for (const [ name, item ] of Object.entries(result.items)) {
+    for (const [name, item] of Object.entries(result.items)) {
       const { fileRef, console } = item;
       if (!fileRef || !console) {
         continue;
@@ -237,9 +270,11 @@ export class Service {
       const markers = Service.getMarkers(console);
       if (markers.length > 0) {
         monaco.editor.setModelMarkers(file.buffer, "compiler", markers);
-        file.setProblems(markers.map(marker => {
-          return Problem.fromMarker(file, marker);
-        }));
+        file.setProblems(
+          markers.map((marker) => {
+            return Problem.fromMarker(file, marker);
+          })
+        );
       }
     }
 
@@ -248,7 +283,7 @@ export class Service {
     }
 
     const outputFiles: any = {};
-    for (const [ name, item ] of Object.entries(result.items)) {
+    for (const [name, item] of Object.entries(result.items)) {
       const { content } = item;
       if (content) {
         outputFiles[name] = content;
@@ -322,7 +357,7 @@ export class Service {
     const response = await fetch(url, {
       method: "POST",
       body: JSON.stringify(json),
-      headers: new Headers({ "Content-type": "application/json; charset=utf-8" })
+      headers: new Headers({ "Content-type": "application/json; charset=utf-8" }),
     });
     return JSON.parse(await response.text()).html_url;
   }
@@ -330,7 +365,7 @@ export class Service {
   static async loadJSON(uri: string): Promise<ILoadFiddleResponse> {
     const url = "https://webassembly-studio-fiddles.herokuapp.com/fiddle/" + uri;
     const response = await fetch(url, {
-      headers: new Headers({ "Content-type": "application/json; charset=utf-8" })
+      headers: new Headers({ "Content-type": "application/json; charset=utf-8" }),
     });
     return await response.json();
   }
@@ -343,7 +378,7 @@ export class Service {
       const response = await fetch("https://webassembly-studio-fiddles.herokuapp.com/set-fiddle", {
         method: "POST",
         headers: new Headers({ "Content-type": "application/json; charset=utf-8" }),
-        body: JSON.stringify(json)
+        body: JSON.stringify(json),
       });
       let jsonURI = (await response.json()).id;
       jsonURI = jsonURI.substring(jsonURI.lastIndexOf("/") + 1);
@@ -369,11 +404,11 @@ export class Service {
       if (file instanceof Directory) {
         file.mapEachFile((file: File) => serialize(file), true);
       } else {
-        files[file.name] = {content: file.data};
+        files[file.name] = { content: file.data };
       }
     }
     serialize(content);
-    const json: any = { description: "source: https://webassembly.studio", public: true, files};
+    const json: any = { description: "source: https://webassembly.studio", public: true, files };
     if (uri !== undefined) {
       json["description"] = json["description"] + `/?f=${uri}`;
     }
@@ -381,27 +416,34 @@ export class Service {
   }
 
   static async saveProject(project: Project, openedFiles: string[][], uri?: string): Promise<string> {
-    const files: IFiddleFile [] = [];
-    project.forEachFile((f: File) => {
-      let data: string;
-      let type: "binary" | "text";
-      if (isBinaryFileType(f.type)) {
-        data = base64EncodeBytes(new Uint8Array(f.data as ArrayBuffer));
-        type = "binary";
-      } else {
-        data = f.data as string;
-        type = "text";
-      }
-      const file = {
-        name: f.getPath(project),
-        data,
-        type
-      };
-      files.push(file);
-    }, true, true);
-    return await this.saveJSON({
-      files
-    }, uri);
+    const files: IFiddleFile[] = [];
+    project.forEachFile(
+      (f: File) => {
+        let data: string;
+        let type: "binary" | "text";
+        if (isBinaryFileType(f.type)) {
+          data = base64EncodeBytes(new Uint8Array(f.data as ArrayBuffer));
+          type = "binary";
+        } else {
+          data = f.data as string;
+          type = "text";
+        }
+        const file = {
+          name: f.getPath(project),
+          data,
+          type,
+        };
+        files.push(file);
+      },
+      true,
+      true
+    );
+    return await this.saveJSON(
+      {
+        files,
+      },
+      uri
+    );
   }
 
   static async loadFilesIntoProject(files: IFiddleFile[], project: Project, base: URL = null): Promise<any> {
@@ -427,6 +469,16 @@ export class Service {
     }
   }
 
+  static async loadApplicationsIntoConsole(applications: string[], base: URL = null) {
+    for (const application of applications) {
+      const url = new URL(application, base).pathname;
+      eval(`import {init} from '.${url}'`);
+      const request = await fetch(new URL(application, base).toString());
+      console.log(request);
+      debugger;
+    }
+  }
+
   static lazyLoad(uri: string, status?: IStatusProvider): Promise<any> {
     return new Promise((resolve, reject) => {
       status && status.push("Loading " + uri);
@@ -437,7 +489,7 @@ export class Service {
       e.async = true;
       e.src = uri;
       b.appendChild(e);
-      e.onload = function() {
+      e.onload = function () {
         status && status.pop();
         resolve(this);
       };
@@ -519,7 +571,7 @@ export class Service {
     const url = URL.createObjectURL(new Blob([file.getData()], { type: "application/octet-stream" }));
     Service.downloadLink.href = url;
     Service.downloadLink.download = file.name;
-    if (Service.downloadLink.href as any !== document.location) {
+    if ((Service.downloadLink.href as any) !== document.location) {
       Service.downloadLink.click();
     }
   }
@@ -543,7 +595,7 @@ export class Service {
         postRun() {
           format();
         },
-        wasmBinary
+        wasmBinary,
       };
       Service.clangFormatModule = Module(module);
     }
@@ -557,7 +609,11 @@ export class Service {
     const output = file.parent.newFile(file.name + ".x86", FileType.x86);
 
     function toBytes(a: any) {
-      return a.map(function(x: any) { return padLeft(Number(x).toString(16), 2, "0"); }).join(" ");
+      return a
+        .map(function (x: any) {
+          return padLeft(Number(x).toString(16), 2, "0");
+        })
+        .join(" ");
     }
 
     const service = await createCompilerService(Language.Wasm, Language.x86);
@@ -581,7 +637,7 @@ export class Service {
       const csBuffer = decodeRestrictedBase64ToBytes(region.bytes);
       const instructions = cs.disasm(csBuffer, region.entry);
       const basicBlocks: any = {};
-      instructions.forEach(function(instr: any, i: any) {
+      instructions.forEach(function (instr: any, i: any) {
         assemblyInstructionsByAddress[instr.address] = instr;
         if (isBranch(instr)) {
           const targetAddress = parseInt(instr.op_str, 10);
@@ -594,11 +650,12 @@ export class Service {
           }
         }
       });
-      instructions.forEach(function(instr: any) {
+      instructions.forEach(function (instr: any) {
         if (basicBlocks[instr.address]) {
           s += " " + padRight(toAddress(instr.address) + ":", 39, " ");
           if (basicBlocks[instr.address].length > 0) {
-            s += "; " + toAddress(instr.address) + " from: [" + basicBlocks[instr.address].map(toAddress).join(", ") + "]";
+            s +=
+              "; " + toAddress(instr.address) + " from: [" + basicBlocks[instr.address].map(toAddress).join(", ") + "]";
           }
           s += "\n";
         }
@@ -626,10 +683,14 @@ export class Service {
         window.removeEventListener("message", Service.binaryExplorerMessageListener, false);
         Service.binaryExplorerMessageListener = null;
         const dataToSend = new Uint8Array((file.data as any).slice(0));
-        e.source.postMessage({
-          type: "wasmexplorer-load",
-          data: dataToSend
-        }, "*", [dataToSend.buffer]);
+        e.source.postMessage(
+          {
+            type: "wasmexplorer-load",
+            data: dataToSend,
+          },
+          "*",
+          [dataToSend.buffer]
+        );
       }
     };
     window.addEventListener("message", Service.binaryExplorerMessageListener, false);
@@ -639,8 +700,8 @@ export class Service {
     const { project, global } = getCurrentRunnerInfo();
     const context = new RewriteSourcesContext(project);
     context.logLn = console.log;
-    context.createFile = (src: ArrayBuffer|string, type: string) => {
-      const blob = new global.Blob([src], { type, });
+    context.createFile = (src: ArrayBuffer | string, type: string) => {
+      const blob = new global.Blob([src], { type });
       return global.URL.createObjectURL(blob);
     };
 

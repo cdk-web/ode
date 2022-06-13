@@ -28,7 +28,7 @@ const outputPath = process.argv[3];
 
 function walk(base, callback) {
   let files = fs.readdirSync(base);
-  files.forEach(file => {
+  files.forEach((file) => {
     let fullpath = path.join(base, file);
     if (fs.statSync(fullpath).isDirectory()) {
       walk(fullpath, callback);
@@ -41,6 +41,7 @@ function walk(base, callback) {
 function bundleTemplate(templateName) {
   let description = "";
   let icon = "";
+  let applications = [];
 
   let base = path.join(templatesDir, templateName);
   let files = [];
@@ -54,18 +55,20 @@ function bundleTemplate(templateName) {
         templateName = pkg.wasmStudio.name || name;
         description = pkg.wasmStudio.description || description;
         icon = pkg.wasmStudio.icon || icon;
+        applications = pkg.wasmStudio.applications || applications;
       }
     }
     files.push({
       name,
     });
-  })
+  });
   return {
     name: templateName,
     description,
     icon,
     files,
-  }
+    applications,
+  };
 }
 
 let templates = fs.readdirSync(templatesDir);
@@ -83,6 +86,4 @@ fse.removeSync(path.resolve(outputPath));
 fse.mkdirpSync(path.resolve(outputPath));
 fse.copySync(path.resolve(templatesDir), path.resolve(outputPath));
 
-fs.writeFileSync(
-  path.resolve(outputPath, "index.js"),
-  JSON.stringify(output, null, 2));
+fs.writeFileSync(path.resolve(outputPath, "index.js"), JSON.stringify(output, null, 2));
