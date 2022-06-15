@@ -1,6 +1,7 @@
-import { FitAddon } from 'xterm-addon-fit';
-import { WebglAddon } from 'xterm-addon-webgl';
-import { WebLinksAddon } from 'xterm-addon-web-links';
+import { FitAddon } from "xterm-addon-fit";
+import { WebglAddon } from "xterm-addon-webgl";
+import { WebLinksAddon } from "xterm-addon-web-links";
+import { SerializeAddon } from "xterm-addon-serialize";
 
 export function register(terminal) {
   terminal.loadAddon(new WebLinksAddon());
@@ -19,4 +20,8 @@ export function register(terminal) {
   fitAddon.fit();
   const dims = fitAddon.proposeDimensions();
   terminal.resize(dims.cols, dims.rows - 2);
+
+  const serializeAddon = new SerializeAddon();
+  terminal.loadAddon(serializeAddon);
+  terminal.serializeAddon = serializeAddon;
 }

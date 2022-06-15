@@ -142,6 +142,7 @@
     "webpack-dev-server": "^3.1.10",
     "xterm": "^4.18.0",
     "xterm-addon-fit": "^0.5.0",
+    "xterm-addon-serialize": "^0.6.2",
     "xterm-addon-web-links": "^0.5.1",
     "xterm-addon-webgl": "^0.11.4",
     "xterm-js-shell": "^1.1.3"
