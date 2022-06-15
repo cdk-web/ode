@@ -127,7 +127,7 @@ export class ControlCenter extends React.Component<
       case ControlCenterTabs.Problems:
         return <Problems />;
       case ControlCenterTabs.Terminal:
-        return ConsoleView();
+        return <ConsoleView />;
       default:
         return null;
     }

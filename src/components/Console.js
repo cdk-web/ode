@@ -8,6 +8,8 @@ import * as appRegistry from "./console";
 
 import "xterm/css/xterm.css";
 
+let _buf = null;
+
 class ConsoleProcess {
   constructor(el, applications) {
     const terminal = new Terminal({ cursorBlink: true });
@@ -59,6 +61,8 @@ class ConsoleProcess {
     this.terminal = terminal;
     this.shell = shell;
     this.refit();
+
+    _buf && terminal.writeln(_buf);
   }
 
   refit() {
@@ -74,6 +78,8 @@ class ConsoleProcess {
       delete this.shell;
     }
     if (this.terminal) {
+      _buf = this.terminal.serializeAddon.serialize();
+      debugger;
       this.terminal.dispose();
       delete this.terminal;
     }
@@ -116,16 +122,16 @@ export default class Console extends React.Component {
     return (
       <div style={{ backgroundColor: "#000", width: "100%", height: "100%" }}>
         <ReactResizeDetector handleWidth handleHeigh onResize={this.refit}>
-            <div
-              ref={this.handleConsoleRef}
-              style={{
-                width: "100%",
-                height: "calc(100% - 15px)",
-                boxSizing: "border-box",
-                background: "#000",
-                padding: 10,
-              }}
-            ></div>
+          <div
+            ref={this.handleConsoleRef}
+            style={{
+              width: "100%",
+              height: "calc(100% - 15px)",
+              boxSizing: "border-box",
+              background: "#000",
+              padding: 10,
+            }}
+          ></div>
         </ReactResizeDetector>
       </div>
     );
