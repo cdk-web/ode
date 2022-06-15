@@ -471,11 +471,11 @@ export class Service {
 
   static async loadApplicationsIntoConsole(applications: string[], base: URL = null) {
     for (const application of applications) {
-      const url = new URL(application, base).pathname;
-      eval(`import {init} from '.${url}'`);
-      const request = await fetch(new URL(application, base).toString());
-      console.log(request);
-      debugger;
+      // const url = new URL(application, base).pathname;
+      // eval(`import {init} from '.${url}'`);
+      // const request = await fetch(new URL(application, base).toString());
+      // console.log(request);
+      // debugger;
     }
   }
 

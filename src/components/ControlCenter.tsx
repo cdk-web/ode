@@ -31,6 +31,8 @@ import { Button } from "./shared/Button";
 import { GoThreeBars } from "./shared/Icons";
 import { Split, SplitInfo, SplitOrientation } from "./Split";
 
+export { Application } from "./Console";
+
 enum ControlCenterTabs {
   Output,
   Terminal,

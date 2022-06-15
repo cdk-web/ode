@@ -9,6 +9,8 @@ import * as console from "./console";
 
 import "xterm/css/xterm.css";
 
+let _buf: null | string = null;
+
 export interface Application {
   init(shell: typeof XtermJSShell): void;
 }
@@ -22,6 +24,7 @@ interface Props {}
 
 class ConsoleTerminal extends Terminal {
   listeners: any[] = [];
+  serializeAddon: any;
   constructor(options?: ITerminalOptions) {
     super(options);
   }
@@ -114,6 +117,7 @@ export class Console extends React.Component<
     (console as any).addons.register(terminal);
     this.setState({ shell, terminal });
     this.refit();
+    _buf && terminal.writeln(_buf);
   };
 
   refit = () => {
@@ -130,6 +134,7 @@ export class Console extends React.Component<
       this.setState({ shell: null });
     }
     if (this.state.terminal) {
+      _buf = this.state.terminal.serializeAddon.serialize();
       this.state.terminal.dispose();
       this.setState({ terminal: null });
     }
