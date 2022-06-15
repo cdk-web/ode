@@ -37,11 +37,6 @@ enum ControlCenterTabs {
   Problems,
 }
 
-function ConsoleView() {
-  // @ts-ignore
-  return <Console />;
-}
-
 export class ControlCenter extends React.Component<
   {
     onToggle?: Function;
