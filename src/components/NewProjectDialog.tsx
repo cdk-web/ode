@@ -34,6 +34,7 @@ export interface Template {
   files: IFiddleFile[];
   baseUrl: URL;
   icon: string;
+  applications: string[];
 }
 
 export class NewProjectDialog extends React.Component<
@@ -75,6 +76,7 @@ export class NewProjectDialog extends React.Component<
         icon,
         files: entry.files,
         baseUrl: new URL(key + "/", base),
+        applications: entry.applications || [],
       });
     }
 

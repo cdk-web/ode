@@ -25,16 +25,25 @@ import appStore from "../stores/AppStore";
 import { layout } from "../util";
 import { EditorView, Tab, Tabs, View } from "./editor";
 import { Problems } from "./Problems";
-import Console from "./Console";
+import { Console, Application } from "./Console";
 import { Sandbox } from "./Sandbox";
 import { Button } from "./shared/Button";
 import { GoThreeBars } from "./shared/Icons";
 import { Split, SplitInfo, SplitOrientation } from "./Split";
 
+export { Application } from "./Console";
+
+enum ControlCenterTabs {
+  Output,
+  Terminal,
+  Problems,
+}
+
 export class ControlCenter extends React.Component<
   {
     onToggle?: Function;
     showSandbox: boolean;
+    terminalApplications: Application[];
   },
   {
     /**
@@ -45,7 +54,7 @@ export class ControlCenter extends React.Component<
     /**
      * Visible pane.
      */
-    visible: "output" | "problems" | "terminal";
+    visible: ControlCenterTabs;
 
     problemCount: number;
     outputLineCount: number;
@@ -62,7 +71,7 @@ export class ControlCenter extends React.Component<
     this.outputView = new View(outputFile);
 
     this.state = {
-      visible: "output",
+      visible: ControlCenterTabs.Terminal,
       splits: [
         { min: 128, value: 512 },
         { min: 128, value: 256 },
@@ -105,7 +114,7 @@ export class ControlCenter extends React.Component<
   }
   createPane() {
     switch (this.state.visible) {
-      case "output":
+      case ControlCenterTabs.Output:
         return (
           <EditorView
             ref={(ref) => this.setOutputViewEditor(ref)}
@@ -113,11 +122,11 @@ export class ControlCenter extends React.Component<
             options={{ renderIndentGuides: false }}
           />
         );
-      case "problems":
+      case ControlCenterTabs.Problems:
         return <Problems />;
-      case "terminal":
+      case ControlCenterTabs.Terminal:
         // @ts-ignore
-        return <Console />;
+        return <Console applications={this.state.terminalApplications} />;
       default:
         return null;
     }
@@ -156,23 +165,23 @@ export class ControlCenter extends React.Component<
             <Tabs>
               <Tab
                 label={`Output (${this.state.outputLineCount})`}
-                isActive={this.state.visible === "output"}
+                isActive={this.state.visible === ControlCenterTabs.Output}
                 onClick={() => {
-                  this.setState({ visible: "output" });
+                  this.setState({ visible: ControlCenterTabs.Output });
                 }}
               />
               <Tab
                 label={`Problems (${this.state.problemCount})`}
-                isActive={this.state.visible === "problems"}
+                isActive={this.state.visible === ControlCenterTabs.Problems}
                 onClick={() => {
-                  this.setState({ visible: "problems" });
+                  this.setState({ visible: ControlCenterTabs.Problems });
                 }}
               />
               <Tab
                 label={`Terminal (${this.state.problemCount})`}
-                isActive={this.state.visible === "terminal"}
+                isActive={this.state.visible === ControlCenterTabs.Terminal}
                 onClick={() => {
-                  this.setState({ visible: "terminal" });
+                  this.setState({ visible: ControlCenterTabs.Terminal });
                 }}
               />
             </Tabs>

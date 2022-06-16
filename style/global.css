@@ -1083,3 +1083,7 @@ a {
   display: block;
   background-color: #484848;
  }
+
+.xterm .xterm-viewport {
+  overflow-y: hidden !important;
+}

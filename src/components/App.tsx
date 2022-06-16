@@ -53,7 +53,7 @@ import appStore from "../stores/AppStore";
 import { assert, layout, resetDOMSelection } from "../util";
 import Group from "../utils/group";
 import { RunTaskExternals } from "../utils/taskRunner";
-import { ControlCenter } from "./ControlCenter";
+import { ControlCenter, Application } from "./ControlCenter";
 import { EditFileDialog } from "./EditFileDialog";
 import { View, ViewTabs } from "./editor";
 import { defaultViewTypeForFileType } from "./editor/View";
@@ -86,6 +86,11 @@ export interface AppState {
   project: ModelRef<Project>;
   file: ModelRef<File>;
   fiddle: string;
+
+  /**
+   * Loaded terminal applications that can be ran in the control center Terminal
+   */
+  applications: Application[];
 
   /**
    * If not null, the the new file dialog is open and files are created in this
@@ -177,6 +182,7 @@ export class App extends React.Component<AppProps, AppState> {
       editFileDialogFile: null,
       newProjectDialog: !props.fiddle,
       shareDialog: false,
+      applications: [],
       workspaceSplits: [
         {
           min: 200,
@@ -190,7 +196,7 @@ export class App extends React.Component<AppProps, AppState> {
       controlCenterSplits: [{ min: 100 }, { min: 40, value: 256 }],
       editorSplits: [],
       showProblems: true,
-      showSandbox: props.embeddingParams.type !== EmbeddingType.Arc,
+      showSandbox: false,
       uploadFileDialogDirectory: null,
       newDirectoryDialog: null,
       tabGroups: null,
@@ -809,6 +815,7 @@ export class App extends React.Component<AppProps, AppState> {
                   {editorPanes}
                   <ControlCenter
                     showSandbox={this.state.showSandbox}
+                    terminalApplications={this.state.applications}
                     onToggle={() => {
                       const splits = this.state.controlCenterSplits;
                       splits[1].value = splits[1].value === 40 ? 256 : 40;

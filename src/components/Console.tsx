@@ -1,31 +1,58 @@
 import _ from "lodash";
-import React from "react";
-import assert from "assert";
-import PropTypes from "prop-types";
-import { Terminal } from "xterm";
+import * as React from "react";
+import * as assert from "assert";
+import * as PropTypes from "prop-types";
+import { Terminal, ITerminalOptions } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
 import XtermJSShell from "xterm-js-shell";
-import { css } from "@emotion/react";
 import * as console from "./console";
 
 import "xterm/css/xterm.css";
 
-const styles = css`
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
+let _buf: null | string = null;
 
-  .xterm .xterm-viewport {
-    overflow-y: hidden !important;
+export interface Application {
+  init(shell: typeof XtermJSShell): void;
+}
+
+interface State {
+  shell?: typeof XtermJSShell;
+  terminal: ConsoleTerminal;
+}
+
+interface Props {}
+
+class ConsoleTerminal extends Terminal {
+  listeners: any[] = [];
+  serializeAddon: any;
+  constructor(options?: ITerminalOptions) {
+    super(options);
   }
-`;
+  on(name: string, ...args: any[]) {
+    const listener = (this as any)[`on${_.capitalize(name)}`](...args);
+    this.listeners.push(listener);
+  }
+  off() {
+    for (let listener of this.listeners) {
+      listener.dispose();
+    }
+    this.listeners = [];
+  }
+  refit() {}
+}
 
-export default class Console extends React.Component {
-  state = {
+export class Console extends React.Component<
+  {
+    applications: Application[];
+    tabSize: number;
+    padding: string;
+  },
+  {}
+> {
+  state: State = {
     /** @type {XtermJSShell} */
     shell: null,
-    /** @type {Terminal} */
+    /** @type {ConsoleTerminal} */
     terminal: null,
   };
 
@@ -35,12 +62,16 @@ export default class Console extends React.Component {
     applications: PropTypes.arrayOf(PropTypes.func),
   };
 
-  static defaultProps = {
+  static defaultProps: Props = {
     padding: 5,
     applications: [],
   };
 
-  handleConsoleData = (data) => {
+  constructor(props: any) {
+    super(props);
+  }
+
+  handleConsoleData = (data: string) => {
     assert.ok(this.state.shell);
     assert.ok(_.isString(data));
     // this api prints into xterm
@@ -48,30 +79,18 @@ export default class Console extends React.Component {
     this.refit();
   };
 
-  handleConsoleRef = (el) => {
-    if (!el) return this.cleanup();
-    const terminal = new Terminal({ cursorBlink: true });
-    // XtermJSShell uses eventemitter api, here we do a conversion
-    terminal.listeners = [];
-    terminal.on = (name, ...args) => {
-      const listener = terminal[`on${_.capitalize(name)}`](...args);
-      terminal.listeners.push(listener);
-    };
-    terminal.off = () => {
-      for (let listener of terminal.listeners) {
-        listener.dispose();
-      }
-      terminal.listeners = [];
-    };
+  handleConsoleRef = (el: HTMLElement) => {
+    if (!el) return; // this.cleanup();
+    const terminal = new ConsoleTerminal({ cursorBlink: true });
     // XtermJSShell is older than our xterm and needs some patches
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
     console.registerApplications(shell);
-    this.props.applications.forEach((application) => application(shell));
+    this.props.applications.forEach((application: Application) => application.init(shell));
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
     const read = shell.echo.read.bind(shell.echo);
-    shell.echo.read = async (...args) => {
+    shell.echo.read = async (...args: any[]) => {
       const line = await read(...args);
       lastLine = line;
       return line;
@@ -82,7 +101,7 @@ export default class Console extends React.Component {
     };
     // we hook into XtermJSShell and pass stuff it does not recognize to cash-money
     const run = shell.run.bind(shell);
-    shell.run = async (command, args, flags) => {
+    shell.run = async (command: string, args: any[], flags: { [key: string]: string }) => {
       try {
         // this is everything registered with XtermJSShell's api
         // documented in node_modules/xterm-js-shell/README.md
@@ -95,9 +114,10 @@ export default class Console extends React.Component {
     };
     shell.repl();
     terminal.open(el);
-    console.addons.register(terminal);
+    (console as any).addons.register(terminal);
     this.setState({ shell, terminal });
     this.refit();
+    _buf && terminal.writeln(_buf);
   };
 
   refit = () => {
@@ -114,6 +134,7 @@ export default class Console extends React.Component {
       this.setState({ shell: null });
     }
     if (this.state.terminal) {
+      _buf = this.state.terminal.serializeAddon.serialize();
       this.state.terminal.dispose();
       this.setState({ terminal: null });
     }
@@ -130,19 +151,16 @@ export default class Console extends React.Component {
   render() {
     return (
       <ReactResizeDetector handleWidth handleHeight skipOnMount={true} onResize={this.refit}>
-        {({ height, targetRef }) => (
-          <div ref={targetRef} css={styles}>
-            <div
-              ref={this.handleConsoleRef}
-              style={{
-                width: "100%",
-                height: height ? height - this.props.tabSize : "100%",
-                padding: this.props.padding,
-                boxSizing: "border-box",
-              }}
-            ></div>
-          </div>
-        )}
+        <div
+          ref={this.handleConsoleRef}
+          style={{
+            width: "100%",
+            height: "calc(100% - 15px)",
+            boxSizing: "border-box",
+            background: "#000",
+            padding: 10,
+          }}
+        ></div>
       </ReactResizeDetector>
     );
   }
