@@ -17,6 +17,9 @@
     "icon": "python-lang-file-icon",
     "applications": [
       "applications/python.js"
+    ],
+    "actions": [
+      {"label": "Deploy", "command": "cdk deploy", "index": 0}
     ]
   }
 }

@@ -6,14 +6,13 @@ import { Terminal, ITerminalOptions } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
 import XtermJSShell from "xterm-js-shell";
 import * as console from "./console";
+import { Application } from "../models";
 
 import "xterm/css/xterm.css";
 
 let _buf: null | string = null;
 
-export interface Application {
-  init(shell: typeof XtermJSShell): void;
-}
+export { Application } from "../models";
 
 interface State {
   shell?: typeof XtermJSShell;
@@ -78,6 +77,11 @@ export class Console extends React.Component<
     this.state.shell.printLine(data);
     this.refit();
   };
+
+  componentDidUpdate(prevProps: any, prevState: any, snapshot: any) {
+    window.console.log(prevProps, prevState, snapshot);
+    debugger;
+  }
 
   handleConsoleRef = (el: HTMLElement) => {
     if (!el) return; // this.cleanup();

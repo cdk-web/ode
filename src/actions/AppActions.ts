@@ -23,7 +23,7 @@ import { View, ViewType } from "../components/editor/View";
 import { Template } from "../components/NewProjectDialog";
 import dispatcher from "../dispatcher";
 import { Errors } from "../errors";
-import { Directory, File, Project } from "../models";
+import { Directory, File, Project, Application } from "../models";
 import { Service } from "../service";
 import appStore from "../stores/AppStore";
 import Group from "../utils/group";
@@ -33,6 +33,7 @@ import { runTask as runGulpTask, RunTaskExternals } from "../utils/taskRunner";
 export enum AppActionType {
   ADD_FILE_TO = "ADD_FILE_TO",
   LOAD_PROJECT = "LOAD_PROJECT",
+  LOAD_APPLICATIONS = "LOAD_APPLICATIONS",
   CLEAR_PROJECT_MODIFIED = "CLEAR_PROJECT_MODIFIED",
   INIT_STORE = "INIT_STORE",
   UPDATE_FILE_NAME_AND_DESCRIPTION = "UPDATE_FILE_NAME_AND_DESCRIPTION",
@@ -72,6 +73,11 @@ export function addFileTo(file: File, parent: Directory) {
 export interface LoadProjectAction extends AppAction {
   type: AppActionType.LOAD_PROJECT;
   project: Project;
+}
+
+export interface LoadApplicationAction extends AppAction {
+  type: AppActionType.LOAD_APPLICATIONS;
+  applications: Application[];
 }
 
 export function loadProject(project: Project) {
@@ -211,11 +217,15 @@ export interface OpenFilesAction extends AppAction {
 export async function openProjectFiles(template: Template) {
   const newProject = new Project();
   await Service.loadFilesIntoProject(template.files, newProject, template.baseUrl);
-  await Service.loadApplicationsIntoConsole(template.applications, template.baseUrl);
+  const applications = await Service.loadTemplateApplications(template.applications, template.baseUrl);
   dispatcher.dispatch({
     type: AppActionType.LOAD_PROJECT,
     project: newProject,
   } as LoadProjectAction);
+  dispatcher.dispatch({
+    type: AppActionType.LOAD_APPLICATIONS,
+    applications,
+  } as LoadApplicationAction);
   if (newProject.getFile("README.md")) {
     openFiles([["README.md"]]);
   }

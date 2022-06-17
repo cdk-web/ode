@@ -85,6 +85,7 @@
     "react-icons": "^2.2.7",
     "react-modal": "^3.6.1",
     "request": "^2.88.0",
+    "requirejs": "^2.3.6",
     "tar-js": "^0.3.0",
     "tslint-react": "^3.6.0"
   },
