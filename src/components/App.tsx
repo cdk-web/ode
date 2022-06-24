@@ -142,6 +142,7 @@ export interface AppState {
   hasStatus: boolean;
   isContentModified: boolean;
   windowDimensions: string;
+  toolbarButtons: JSX.Element[];
 }
 
 export interface AppProps {
@@ -204,6 +205,7 @@ export class App extends React.Component<AppProps, AppState> {
       windowDimensions: App.getWindowDimensions(),
       hasStatus: false,
       isContentModified: false,
+      toolbarButtons: [],
     };
     fs.mkdirpSync("/studio/notes");
     fs.mkdirpSync("/tmp");
@@ -416,12 +418,28 @@ export class App extends React.Component<AppProps, AppState> {
   }
 
   makeToolbarButtons() {
-    const toolbarButtons = [
-      <Button
-        key="ViewWorkspace"
-        icon={<GoThreeBars />}
-        title="View Project Workspace"
-        onClick={() => {
+    const toolbarButtons: {
+      key: string;
+      icon?: any;
+      title?: string;
+      label?: string;
+      target?: string;
+      isDisabled?: boolean;
+      href?: string;
+      rel?: string;
+      customClassName?: string;
+      onClick?: () => void;
+    }[] = [
+      {
+        key: "ViewWorkspace",
+        icon: <GoThreeBars />,
+        title: "View Project Workspace",
+        label: "",
+        isDisabled: false,
+        target: "",
+        href: "",
+        rel: "",
+        onClick: () => {
           const workspaceSplits = this.state.workspaceSplits;
           const first = workspaceSplits[0];
           const second = workspaceSplits[1];
@@ -434,172 +452,161 @@ export class App extends React.Component<AppProps, AppState> {
             first.max = first.min = 0;
           }
           this.setState({ workspaceSplits });
-        }}
-      />,
+        },
+      },
     ];
+
     if (this.props.embeddingParams.type === EmbeddingType.Default) {
-      toolbarButtons.push(
-        <Button
-          key="EditInWebAssemblyStudio"
-          icon={<GoPencil />}
-          label="Edit in WebAssembly Studio"
-          title="Edit Project in WebAssembly Studio"
-          isDisabled={!this.state.fiddle}
-          href={`//webassembly.studio/?f=${this.state.fiddle}`}
-          target="wasm.studio"
-          rel="noopener noreferrer"
-        />
-      );
+      toolbarButtons.push({
+        key: "EditInWebAssemblyStudio",
+        icon: <GoPencil />,
+        label: "Edit in WebAssembly Studio",
+        title: "Edit Project in WebAssembly Studio",
+        isDisabled: !this.state.fiddle,
+        href: `//webassembly.studio/?f=${this.state.fiddle}`,
+        target: "wasm.studio",
+        rel: "noopener noreferrer",
+      });
     }
     if (this.props.embeddingParams.type === EmbeddingType.None && this.props.update) {
-      toolbarButtons.push(
-        <Button
-          key="UpdateProject"
-          icon={<GoPencil />}
-          label="Update"
-          title="Update Project"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
-            this.update();
-          }}
-        />
-      );
+      toolbarButtons.push({
+        key: "UpdateProject",
+        icon: <GoPencil />,
+        label: "Update",
+        title: "Update Project",
+        isDisabled: this.toolbarButtonsAreDisabled(),
+        onClick: () => {
+          this.update();
+        },
+      });
     }
     if (
       this.props.embeddingParams.type === EmbeddingType.None ||
       this.props.embeddingParams.type === EmbeddingType.Arc
     ) {
-      toolbarButtons.push(
-        <Button
-          key="ForkProject"
-          icon={<GoRepoForked />}
-          label="Fork"
-          title="Fork Project"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
-            this.fork();
-          }}
-        />
-      );
+      toolbarButtons.push({
+        key: "ForkProject",
+        icon: <GoRepoForked />,
+        label: "Fork",
+        title: "Fork Project",
+        isDisabled: this.toolbarButtonsAreDisabled(),
+        onClick: () => {
+          this.fork();
+        },
+      });
     }
     if (this.props.embeddingParams.type === EmbeddingType.None) {
       toolbarButtons.push(
-        <Button
-          key="CreateGist"
-          icon={<GoGist />}
-          label="Create Gist"
-          title="Create GitHub Gist from Project"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
+        {
+          key: "CreateGist",
+          icon: <GoGist />,
+          label: "Create Gist",
+          title: "Create GitHub Gist from Project",
+          isDisabled: this.toolbarButtonsAreDisabled(),
+          onClick: () => {
             this.gist();
-          }}
-        />,
-        <Button
-          key="Download"
-          icon={<GoDesktopDownload />}
-          label="Download"
-          title="Download Project"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
+          },
+        },
+        {
+          key: "Download",
+          icon: <GoDesktopDownload />,
+          label: "Download",
+          title: "Download Project",
+          isDisabled: this.toolbarButtonsAreDisabled(),
+          onClick: () => {
             this.download();
-          }}
-        />,
-        <Button
-          key="Share"
-          icon={<GoRocket />}
-          label="Share"
-          title={this.state.fiddle ? "Share Project" : "Cannot share a project that has not been forked yet."}
-          isDisabled={this.toolbarButtonsAreDisabled() || !this.state.fiddle}
-          onClick={() => {
+          },
+        },
+        {
+          key: "Share",
+          icon: <GoRocket />,
+          label: "Share",
+          title: this.state.fiddle ? "Share Project" : "Cannot share a project that has not been forked yet.",
+          isDisabled: this.toolbarButtonsAreDisabled() || !this.state.fiddle,
+          onClick: () => {
             this.share();
-          }}
-        />
+          },
+        }
       );
     }
-    toolbarButtons.push(
-      <Button
-        key="Build"
-        icon={<GoBeaker />}
-        label="Build"
-        title="Build Project: CtrlCmd + B"
-        isDisabled={this.toolbarButtonsAreDisabled()}
-        onClick={() => {
-          build();
-        }}
-      />
-    );
+    toolbarButtons.push({
+      key: "Build",
+      icon: <GoBeaker />,
+      label: "Build",
+      title: "Build Project: CtrlCmd + B",
+      isDisabled: this.toolbarButtonsAreDisabled(),
+      onClick: () => {
+        build();
+      },
+    });
     if (this.props.embeddingParams.type !== EmbeddingType.Arc) {
       toolbarButtons.push(
-        <Button
-          key="Run"
-          icon={<GoGear />}
-          label="Run"
-          title="Run Project: CtrlCmd + Enter"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
+        {
+          key: "Run",
+          icon: <GoGear />,
+          label: "Run",
+          title: "Run Project: CtrlCmd + Enter",
+          isDisabled: this.toolbarButtonsAreDisabled(),
+          onClick: () => {
             run();
-          }}
-        />,
-        <Button
-          key="BuildAndRun"
-          icon={<GoBeakerGear />}
-          label="Build &amp; Run"
-          title="Build &amp; Run Project: CtrlCmd + Alt + Enter"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
+          },
+        },
+        {
+          key: "BuildAndRun",
+          icon: <GoBeakerGear />,
+          label: "Build &amp; Run",
+          title: "Build &amp; Run Project: CtrlCmd + Alt + Enter",
+          isDisabled: this.toolbarButtonsAreDisabled(),
+          onClick: () => {
             build().then(run);
-          }}
-        />
+          },
+        }
       );
     }
     if (this.props.embeddingParams.type === EmbeddingType.Arc) {
-      toolbarButtons.push(
-        <Button
-          key="Preview"
-          icon={<GoGear />}
-          label="Preview"
-          title="Preview Project: CtrlCmd + Enter"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
-            this.publishArc();
-          }}
-        />
-      );
-      toolbarButtons.push(
-        <Button
-          key="BuildAndPreview"
-          icon={<GoGear />}
-          label="Build &amp; Preview"
-          title="Build &amp; Preview Project: CtrlCmd + Alt + Enter"
-          isDisabled={this.toolbarButtonsAreDisabled()}
-          onClick={() => {
-            build().then(() => this.publishArc());
-          }}
-        />
-      );
+      toolbarButtons.push({
+        key: "Preview",
+        icon: <GoGear />,
+        label: "Preview",
+        title: "Preview Project: CtrlCmd + Enter",
+        isDisabled: this.toolbarButtonsAreDisabled(),
+        onClick: () => {
+          this.publishArc();
+        },
+      });
+      toolbarButtons.push({
+        key: "BuildAndPreview",
+        icon: <GoGear />,
+        label: "Build &amp; Preview",
+        title: "Build &amp; Preview Project: CtrlCmd + Alt + Enter",
+        isDisabled: this.toolbarButtonsAreDisabled(),
+        onClick: () => {
+          build().then(() => this.publishArc());
+        },
+      });
     }
     if (this.props.embeddingParams.type === EmbeddingType.None) {
       toolbarButtons.push(
-        <Button
-          key="GithubIssues"
-          icon={<GoOpenIssue />}
-          label="GitHub Issues"
-          title="GitHub Issues"
-          customClassName="issue"
-          href="https://github.com/wasdk/WebAssemblyStudio"
-          target="_blank"
-          rel="noopener noreferrer"
-        />,
-        <Button
-          key="HelpAndPrivacy"
-          icon={<GoQuestion />}
-          label="Help & Privacy"
-          title="Help & Privacy"
-          customClassName="help"
-          onClick={() => {
+        {
+          key: "GithubIssues",
+          icon: <GoOpenIssue />,
+          label: "GitHub Issues",
+          title: "GitHub Issues",
+          customClassName: "issue",
+          href: "https://github.com/wasdk/WebAssemblyStudio",
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+        {
+          key: "HelpAndPrivacy",
+          icon: <GoQuestion />,
+          label: "Help & Privacy",
+          title: "Help & Privacy",
+          customClassName: "help",
+          onClick: () => {
             this.loadHelp();
-          }}
-        />
+          },
+        }
       );
     }
     return toolbarButtons;
@@ -804,7 +811,24 @@ export class App extends React.Component<AppProps, AppState> {
             />
             <div className="fill">
               <div style={{ height: "40px" }}>
-                <Toolbar>{this.makeToolbarButtons()}</Toolbar>
+                <Toolbar>
+                  {this.makeToolbarButtons().map((button) => {
+                    return (
+                      <Button
+                        key={button.key}
+                        icon={button.icon}
+                        label={button.label}
+                        title={button.title}
+                        isDisabled={button.isDisabled}
+                        href={button.href}
+                        target={button.target}
+                        rel={button.rel}
+                        onClick={button.onClick}
+                      />
+                    );
+                  })}
+                  {/* {this.makeToolbarButtons()} */}
+                </Toolbar>
               </div>
               <div style={{ height: "calc(100% - 40px)" }}>
                 <Split
