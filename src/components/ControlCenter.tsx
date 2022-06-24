@@ -126,7 +126,7 @@ export class ControlCenter extends React.Component<
         return <Problems />;
       case ControlCenterTabs.Terminal:
         // @ts-ignore
-        return <Console applications={this.state.terminalApplications} />;
+        return <Console applications={this.props.terminalApplications} />;
       default:
         return null;
     }

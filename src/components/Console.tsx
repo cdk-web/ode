@@ -79,8 +79,10 @@ export class Console extends React.Component<
   };
 
   componentDidUpdate(prevProps: any, prevState: any, snapshot: any) {
-    window.console.log(prevProps, prevState, snapshot);
-    debugger;
+    if (!this.state.shell) {
+      return;
+    }
+    this.props.applications.forEach((application: Application) => application.init(this.state.shell));
   }
 
   handleConsoleRef = (el: HTMLElement) => {
@@ -90,7 +92,7 @@ export class Console extends React.Component<
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
     console.registerApplications(shell);
-    this.props.applications.forEach((application: Application) => application.init(shell));
+
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
     const read = shell.echo.read.bind(shell.echo);

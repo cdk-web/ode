@@ -1,7 +1,7 @@
 define({
   init(shell) {
-    shell.command("python", async (shell, args, opts) => {
-      shell.printLine("Hello World");
+    shell.command("hello", async (shell, args, opts) => {
+      shell.printLine("World");
     });
   },
 });
