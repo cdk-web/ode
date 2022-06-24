@@ -63,6 +63,7 @@ module.exports = (env) => {
     externals: {
       react: "React",
       "react-dom": "ReactDOM",
+      requirejs: "requirejs",
     },
     plugins: [new MonacoWebpackPlugin()],
     optimization: {

@@ -6,14 +6,13 @@ import { Terminal, ITerminalOptions } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
 import XtermJSShell from "xterm-js-shell";
 import * as console from "./console";
+import { Application } from "../models";
 
 import "xterm/css/xterm.css";
 
 let _buf: null | string = null;
 
-export interface Application {
-  init(shell: typeof XtermJSShell): void;
-}
+export { Application } from "../models";
 
 interface State {
   shell?: typeof XtermJSShell;
@@ -79,6 +78,13 @@ export class Console extends React.Component<
     this.refit();
   };
 
+  componentDidUpdate(prevProps: any, prevState: any, snapshot: any) {
+    if (!this.state.shell) {
+      return;
+    }
+    this.props.applications.forEach((application: Application) => application.init(this.state.shell));
+  }
+
   handleConsoleRef = (el: HTMLElement) => {
     if (!el) return; // this.cleanup();
     const terminal = new ConsoleTerminal({ cursorBlink: true });
@@ -86,7 +92,7 @@ export class Console extends React.Component<
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
     console.registerApplications(shell);
-    this.props.applications.forEach((application: Application) => application.init(shell));
+
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
     const read = shell.echo.read.bind(shell.echo);

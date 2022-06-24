@@ -21,6 +21,7 @@
 import { createCompilerService, Language } from "./compilerServices";
 import { IWorkerResponse, WorkerCommand } from "./message";
 import {
+  Application,
   Directory,
   File,
   FileType,
@@ -469,14 +470,15 @@ export class Service {
     }
   }
 
-  static async loadApplicationsIntoConsole(applications: string[], base: URL = null) {
-    for (const application of applications) {
-      // const url = new URL(application, base).pathname;
-      // eval(`import {init} from '.${url}'`);
-      // const request = await fetch(new URL(application, base).toString());
-      // console.log(request);
-      // debugger;
-    }
+  static async loadTemplateApplications(applications: string[], base: URL = null): Promise<Application[]> {
+    const requirejs = require("requirejs");
+    const modules = applications.map((application: string) => new URL(application, base).pathname);
+    const apps = await new Promise((resolve) => {
+      requirejs(modules, (...apps: Application[]) => {
+        resolve(apps);
+      });
+    });
+    return apps as Application[];
   }
 
   static lazyLoad(uri: string, status?: IStatusProvider): Promise<any> {

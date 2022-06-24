@@ -247,6 +247,10 @@ export class App extends React.Component<AppProps, AppState> {
       this.setState({ project: appStore.getProject() });
       runTask("project:load", true, RunTaskExternals.Setup);
     });
+    appStore.onLoadApplications.register(() => {
+      const applications = appStore.getApplications();
+      this.setState({ applications });
+    });
     appStore.onDirtyFileUsed.register((file: File) => {
       this.logLn(`Changes in ${file.getPath()} were ignored, save your changes.`, "warn");
     });

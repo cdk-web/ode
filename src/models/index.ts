@@ -31,8 +31,9 @@ export {
   fileTypeForExtension,
   mimeTypeForFileType,
   fileTypeForMimeType,
-  getIconForFileType
+  getIconForFileType,
 } from "./types";
+export { Application } from "./Application";
 export { Problem } from "./Problem";
 export { Project } from "./Project";
 export { EventDispatcher } from "./EventDispatcher";
