@@ -27,6 +27,7 @@ import {
   CloseViewAction,
   DeleteFileAction,
   FocusTabGroupAction,
+  LoadActionsAction,
   LoadApplicationAction,
   LoadProjectAction,
   LogLnAction,
@@ -40,12 +41,23 @@ import {
 } from "../actions/AppActions";
 import { defaultViewTypeForFileType, View, ViewType } from "../components/editor/View";
 import dispatcher from "../dispatcher";
-import { Application, Directory, EventDispatcher, File, FileType, ModelRef, Project, SandboxRun } from "../models";
+import {
+  Action,
+  Application,
+  Directory,
+  EventDispatcher,
+  File,
+  FileType,
+  ModelRef,
+  Project,
+  SandboxRun,
+} from "../models";
 import { assert } from "../util";
 import Group from "../utils/group";
 
 export class AppStore {
   private project: Project;
+  private actions: Action[];
   private applications: Application[];
   private output: File;
   private isContentModified: boolean;
@@ -54,6 +66,7 @@ export class AppStore {
 
   onLoadProject = new EventDispatcher("AppStore onLoadProject");
   onLoadApplications = new EventDispatcher("AppStore onLoadApplications");
+  onLoadActions = new EventDispatcher("AppStore onLoadActions");
   onDidChangeStatus = new EventDispatcher("AppStore onDidChangeStatus");
   onDidChangeProblems = new EventDispatcher("AppStore onDidChangeProblems");
   onChange = new EventDispatcher("AppStore onChange");
@@ -92,6 +105,11 @@ export class AppStore {
   private loadApplications(applications: Application[]) {
     this.applications = applications;
     this.onLoadApplications.dispatch();
+  }
+
+  private loadActions(actions: Action[]) {
+    this.actions = actions;
+    this.onLoadActions.dispatch();
   }
 
   private bindProject() {
@@ -148,6 +166,10 @@ export class AppStore {
 
   public getApplications(): Application[] {
     return this.applications;
+  }
+
+  public getActions(): Action[] {
+    return this.actions;
   }
 
   public getIsContentModified(): boolean {
@@ -362,6 +384,11 @@ export class AppStore {
       case AppActionType.LOAD_PROJECT: {
         const { project } = action as LoadProjectAction;
         this.loadProject(project);
+        break;
+      }
+      case AppActionType.LOAD_ACTIONS: {
+        const { actions } = action as LoadActionsAction;
+        this.loadActions(actions);
         break;
       }
       case AppActionType.LOAD_APPLICATIONS: {

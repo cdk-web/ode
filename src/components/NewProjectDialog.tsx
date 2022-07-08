@@ -23,16 +23,11 @@ import * as React from "react";
 import * as ReactModal from "react-modal";
 import getConfig from "../config";
 import { IFiddleFile, Service } from "../service";
+import { Action } from "../models";
 import fetchTemplates from "../utils/fetchTemplates";
 import { Button } from "./shared/Button";
 import { GoFile, GoX } from "./shared/Icons";
 import { ListBox, ListItem } from "./Widgets";
-
-interface Action {
-  label: string;
-  command: string;
-  index: number;
-}
 
 export interface Template {
   name: string;

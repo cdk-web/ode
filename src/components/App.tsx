@@ -93,6 +93,11 @@ export interface AppState {
   applications: Application[];
 
   /**
+   * Loaded actions for the toolbar
+   */
+  actions: any[];
+
+  /**
    * If not null, the the new file dialog is open and files are created in this
    * directory.
    */
@@ -184,6 +189,7 @@ export class App extends React.Component<AppProps, AppState> {
       newProjectDialog: !props.fiddle,
       shareDialog: false,
       applications: [],
+      actions: [],
       workspaceSplits: [
         {
           min: 200,
@@ -252,6 +258,12 @@ export class App extends React.Component<AppProps, AppState> {
     appStore.onLoadApplications.register(() => {
       const applications = appStore.getApplications();
       this.setState({ applications });
+    });
+    appStore.onLoadActions.register(() => {
+      const actions = appStore.getActions();
+
+      const orgActions = this.makeToolbarButtons();
+      this.setState({ actions: orgActions });
     });
     appStore.onDirtyFileUsed.register((file: File) => {
       this.logLn(`Changes in ${file.getPath()} were ignored, save your changes.`, "warn");
@@ -336,6 +348,7 @@ export class App extends React.Component<AppProps, AppState> {
     this.initializeProject();
   }
   componentDidMount() {
+    this.setState({ actions: this.makeToolbarButtons() });
     layout();
     this.registerShortcuts();
     window.addEventListener(
@@ -419,7 +432,7 @@ export class App extends React.Component<AppProps, AppState> {
 
   makeToolbarButtons() {
     const toolbarButtons: {
-      key: string;
+      key?: string;
       icon?: any;
       title?: string;
       label?: string;
@@ -812,7 +825,7 @@ export class App extends React.Component<AppProps, AppState> {
             <div className="fill">
               <div style={{ height: "40px" }}>
                 <Toolbar>
-                  {this.makeToolbarButtons().map((button) => {
+                  {this.state.actions.map((button) => {
                     return (
                       <Button
                         key={button.key}
@@ -827,7 +840,6 @@ export class App extends React.Component<AppProps, AppState> {
                       />
                     );
                   })}
-                  {/* {this.makeToolbarButtons()} */}
                 </Toolbar>
               </div>
               <div style={{ height: "calc(100% - 40px)" }}>
