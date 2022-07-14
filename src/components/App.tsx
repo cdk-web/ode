@@ -46,6 +46,8 @@ import {
   splitGroup,
   updateFileNameAndDescription,
 } from "../actions/AppActions";
+import * as JsxParser from "react-jsx-parser";
+
 import { notifyArcAboutFork, publishArc } from "../actions/ArcActions";
 import { Directory, File, FileType, ModelRef, Project } from "../models";
 import { Service } from "../service";
@@ -74,6 +76,7 @@ import {
   GoRocket,
   GoThreeBars,
 } from "./shared/Icons";
+import * as icons from "./shared/Icons";
 import { ShareDialog } from "./ShareDialog";
 import { Split, SplitInfo, SplitOrientation } from "./Split";
 import { StatusBar } from "./StatusBar";
@@ -261,8 +264,25 @@ export class App extends React.Component<AppProps, AppState> {
     });
     appStore.onLoadActions.register(() => {
       const actions = appStore.getActions();
-
       const orgActions = this.makeToolbarButtons();
+      for (const action of actions) {
+        let index = action.index || orgActions.length;
+        if (action.index === 0 || action.index < 0) {
+          index = 0;
+        }
+        // if (action.icon) {
+        //   let icon = action.icon;
+        //   if (typeof action.icon == "string") {
+        //     const IconComponent = () => {
+        //       return <JsxParser components={{ ...icons }} jsx={action.icon} />;
+        //     };
+        //     icon = <JsxParser components={{ ...icons }} jsx={action.icon} />;
+        //   }
+        //   action.icon = icon;
+        // }
+        // add one. Zero based index but AFTER the hamburger icon
+        orgActions.splice(index + 1, 0, action);
+      }
       this.setState({ actions: orgActions });
     });
     appStore.onDirtyFileUsed.register((file: File) => {
@@ -493,88 +513,17 @@ export class App extends React.Component<AppProps, AppState> {
         },
       });
     }
-    if (
-      this.props.embeddingParams.type === EmbeddingType.None ||
-      this.props.embeddingParams.type === EmbeddingType.Arc
-    ) {
+    if (this.props.embeddingParams.type === EmbeddingType.None) {
       toolbarButtons.push({
-        key: "ForkProject",
-        icon: <GoRepoForked />,
-        label: "Fork",
-        title: "Fork Project",
+        key: "Download",
+        icon: <GoDesktopDownload />,
+        label: "Download",
+        title: "Download Project",
         isDisabled: this.toolbarButtonsAreDisabled(),
         onClick: () => {
-          this.fork();
+          this.download();
         },
       });
-    }
-    if (this.props.embeddingParams.type === EmbeddingType.None) {
-      toolbarButtons.push(
-        {
-          key: "CreateGist",
-          icon: <GoGist />,
-          label: "Create Gist",
-          title: "Create GitHub Gist from Project",
-          isDisabled: this.toolbarButtonsAreDisabled(),
-          onClick: () => {
-            this.gist();
-          },
-        },
-        {
-          key: "Download",
-          icon: <GoDesktopDownload />,
-          label: "Download",
-          title: "Download Project",
-          isDisabled: this.toolbarButtonsAreDisabled(),
-          onClick: () => {
-            this.download();
-          },
-        },
-        {
-          key: "Share",
-          icon: <GoRocket />,
-          label: "Share",
-          title: this.state.fiddle ? "Share Project" : "Cannot share a project that has not been forked yet.",
-          isDisabled: this.toolbarButtonsAreDisabled() || !this.state.fiddle,
-          onClick: () => {
-            this.share();
-          },
-        }
-      );
-    }
-    toolbarButtons.push({
-      key: "Build",
-      icon: <GoBeaker />,
-      label: "Build",
-      title: "Build Project: CtrlCmd + B",
-      isDisabled: this.toolbarButtonsAreDisabled(),
-      onClick: () => {
-        build();
-      },
-    });
-    if (this.props.embeddingParams.type !== EmbeddingType.Arc) {
-      toolbarButtons.push(
-        {
-          key: "Run",
-          icon: <GoGear />,
-          label: "Run",
-          title: "Run Project: CtrlCmd + Enter",
-          isDisabled: this.toolbarButtonsAreDisabled(),
-          onClick: () => {
-            run();
-          },
-        },
-        {
-          key: "BuildAndRun",
-          icon: <GoBeakerGear />,
-          label: "Build &amp; Run",
-          title: "Build &amp; Run Project: CtrlCmd + Alt + Enter",
-          isDisabled: this.toolbarButtonsAreDisabled(),
-          onClick: () => {
-            build().then(run);
-          },
-        }
-      );
     }
     if (this.props.embeddingParams.type === EmbeddingType.Arc) {
       toolbarButtons.push({
@@ -599,28 +548,16 @@ export class App extends React.Component<AppProps, AppState> {
       });
     }
     if (this.props.embeddingParams.type === EmbeddingType.None) {
-      toolbarButtons.push(
-        {
-          key: "GithubIssues",
-          icon: <GoOpenIssue />,
-          label: "GitHub Issues",
-          title: "GitHub Issues",
-          customClassName: "issue",
-          href: "https://github.com/wasdk/WebAssemblyStudio",
-          target: "_blank",
-          rel: "noopener noreferrer",
+      toolbarButtons.push({
+        key: "HelpAndPrivacy",
+        icon: <GoQuestion />,
+        label: "Help & Privacy",
+        title: "Help & Privacy",
+        customClassName: "help",
+        onClick: () => {
+          this.loadHelp();
         },
-        {
-          key: "HelpAndPrivacy",
-          icon: <GoQuestion />,
-          label: "Help & Privacy",
-          title: "Help & Privacy",
-          customClassName: "help",
-          onClick: () => {
-            this.loadHelp();
-          },
-        }
-      );
+      });
     }
     return toolbarButtons;
   }

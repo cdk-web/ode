@@ -19,7 +19,17 @@
       "applications/python.js"
     ],
     "actions": [
-      {"label": "Deploy", "command": "cdk deploy", "index": 0}
+      {
+        "label": "Deploy",
+        "key": "Deploy",
+        "command": "cdk deploy",
+        "icon": "<GoRocket/>",
+        "index": 0
+      },
+      {
+        "label": "Custom",
+        "command": "cdk deploy"
+      }
     ]
   }
 }
