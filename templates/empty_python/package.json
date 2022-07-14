@@ -21,14 +21,9 @@
     "actions": [
       {
         "label": "Deploy",
-        "key": "Deploy",
         "command": "cdk deploy",
-        "icon": "<GoRocket/>",
+        "icon": "GoRocket",
         "index": 0
-      },
-      {
-        "label": "Custom",
-        "command": "cdk deploy"
       }
     ]
   }
