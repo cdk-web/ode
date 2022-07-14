@@ -43,7 +43,7 @@ class ConsoleTerminal extends Terminal {
 export class Console extends React.Component<
   {
     applications: Application[];
-    tabSize: number;
+    //tabSize: number;
     padding: string;
   },
   {}
@@ -56,9 +56,9 @@ export class Console extends React.Component<
   };
 
   static propTypes = {
-    tabSize: PropTypes.number.isRequired,
+    //tabSize: PropTypes.number.isRequired,
     padding: PropTypes.number,
-    applications: PropTypes.arrayOf(PropTypes.func),
+    applications: PropTypes.arrayOf(PropTypes.shape({init: PropTypes.func})),
   };
 
   static defaultProps: Props = {
