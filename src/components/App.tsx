@@ -75,8 +75,8 @@ import {
   GoRepoForked,
   GoRocket,
   GoThreeBars,
+  IconList
 } from "./shared/Icons";
-import * as icons from "./shared/Icons";
 import { ShareDialog } from "./ShareDialog";
 import { Split, SplitInfo, SplitOrientation } from "./Split";
 import { StatusBar } from "./StatusBar";
@@ -270,16 +270,10 @@ export class App extends React.Component<AppProps, AppState> {
         if (action.index === 0 || action.index < 0) {
           index = 0;
         }
-        // if (action.icon) {
-        //   let icon = action.icon;
-        //   if (typeof action.icon == "string") {
-        //     const IconComponent = () => {
-        //       return <JsxParser components={{ ...icons }} jsx={action.icon} />;
-        //     };
-        //     icon = <JsxParser components={{ ...icons }} jsx={action.icon} />;
-        //   }
-        //   action.icon = icon;
-        // }
+        if (action.icon) {
+          const el = React.createElement(IconList[action.icon as string], {key: `Icon${index}`})
+          action.icon = el;
+        }
         // add one. Zero based index but AFTER the hamburger icon
         orgActions.splice(index + 1, 0, action);
       }
