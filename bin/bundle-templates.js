@@ -41,6 +41,7 @@ function walk(base, callback) {
 function bundleTemplate(templateName) {
   let description = "";
   let icon = "";
+  let actions = [];
   let applications = [];
 
   let base = path.join(templatesDir, templateName);
@@ -55,6 +56,7 @@ function bundleTemplate(templateName) {
         templateName = pkg.wasmStudio.name || name;
         description = pkg.wasmStudio.description || description;
         icon = pkg.wasmStudio.icon || icon;
+        actions = pkg.wasmStudio.actions || actions;
         applications = pkg.wasmStudio.applications || applications;
       }
     }
@@ -68,6 +70,7 @@ function bundleTemplate(templateName) {
     icon,
     files,
     applications,
+    actions,
   };
 }
 

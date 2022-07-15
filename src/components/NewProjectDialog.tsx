@@ -23,6 +23,7 @@ import * as React from "react";
 import * as ReactModal from "react-modal";
 import getConfig from "../config";
 import { IFiddleFile, Service } from "../service";
+import { Action } from "../models";
 import fetchTemplates from "../utils/fetchTemplates";
 import { Button } from "./shared/Button";
 import { GoFile, GoX } from "./shared/Icons";
@@ -35,6 +36,7 @@ export interface Template {
   baseUrl: URL;
   icon: string;
   applications: string[];
+  actions: Action[];
 }
 
 export class NewProjectDialog extends React.Component<
@@ -70,13 +72,16 @@ export class NewProjectDialog extends React.Component<
       const name = entry.name || "";
       const description = entry.description || "";
       const icon = entry.icon || "";
+      const applications = entry.applications || [];
+      const actions = entry.actions || [];
       templates.push({
         name,
         description,
         icon,
         files: entry.files,
         baseUrl: new URL(key + "/", base),
-        applications: entry.applications || [],
+        applications,
+        actions,
       });
     }
 

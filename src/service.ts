@@ -21,6 +21,7 @@
 import { createCompilerService, Language } from "./compilerServices";
 import { IWorkerResponse, WorkerCommand } from "./message";
 import {
+  Action,
   Application,
   Directory,
   File,
@@ -468,6 +469,23 @@ export class Service {
       }
       file.setData(data);
     }
+  }
+
+  static async loadTemplateActions(actions: Action[], base: URL = null): Promise<Action[]> {
+    const requirejs = require("requirejs");
+    const modules = actions.map((action: Action) => {
+      if(!action.onClick) return undefined;
+      return new URL(action.onClick as any as string, base).pathname
+    });
+    const acts = await new Promise((resolve) => {
+      requirejs(modules, (...acts: (()=>{})[]) => {
+        resolve(acts);
+      });
+    });
+    (acts as any[]).forEach((action: any, index: number) => {
+      actions[index].onClick = action;
+    })
+    return actions as Action[];
   }
 
   static async loadTemplateApplications(applications: string[], base: URL = null): Promise<Application[]> {

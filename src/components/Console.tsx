@@ -4,8 +4,11 @@ import * as assert from "assert";
 import * as PropTypes from "prop-types";
 import { Terminal, ITerminalOptions } from "xterm";
 import ReactResizeDetector from "react-resize-detector";
+import stringArgv from "string-argv";
+import minimist from "minimist";
 import XtermJSShell from "xterm-js-shell";
-import * as console from "./console";
+import appStore from "../stores/AppStore";
+import * as consoleComponent from "./console";
 import { Application } from "../models";
 
 import "xterm/css/xterm.css";
@@ -43,7 +46,7 @@ class ConsoleTerminal extends Terminal {
 export class Console extends React.Component<
   {
     applications: Application[];
-    tabSize: number;
+    //tabSize: number;
     padding: string;
   },
   {}
@@ -56,9 +59,9 @@ export class Console extends React.Component<
   };
 
   static propTypes = {
-    tabSize: PropTypes.number.isRequired,
+    //tabSize: PropTypes.number.isRequired,
     padding: PropTypes.number,
-    applications: PropTypes.arrayOf(PropTypes.func),
+    applications: PropTypes.arrayOf(PropTypes.shape({init: PropTypes.func})),
   };
 
   static defaultProps: Props = {
@@ -85,13 +88,30 @@ export class Console extends React.Component<
     this.props.applications.forEach((application: Application) => application.init(this.state.shell));
   }
 
+  componentWillMount() {
+    // handle 3rd party actions sent from app
+    appStore.onRunAction.register(() => {
+      const action = appStore.getAction();
+      action.command.split("\n").forEach((line: string) => {
+        const argv = stringArgv(line)
+        const command = argv.shift()
+        const parsed = minimist(argv)
+        const raw_args = parsed._
+        this.state.shell.currentLine = () => {
+          return line;
+        };
+        this.state.shell.run(command, raw_args, parsed)
+      })
+    });
+  }
+
   handleConsoleRef = (el: HTMLElement) => {
     if (!el) return; // this.cleanup();
     const terminal = new ConsoleTerminal({ cursorBlink: true });
     // XtermJSShell is older than our xterm and needs some patches
     const shell = new XtermJSShell(terminal);
     // create applications that listen for specific commands
-    console.registerApplications(shell);
+    consoleComponent.registerApplications(shell);
 
     // we hook into where XtermJSShell reads lines and save the last one
     let lastLine = "";
@@ -115,12 +135,12 @@ export class Console extends React.Component<
         // }
       } catch (err) {
         // if lastLine is empty, user is just hitting enter without commands
-        if (lastLine) shell.printLine(`command "${lastLine}" not found: "${err.message}"`);
+        if (shell.currentLine()) shell.printLine(err.message);
       }
     };
     shell.repl();
     terminal.open(el);
-    (console as any).addons.register(terminal);
+    (consoleComponent as any).addons.register(terminal);
     this.setState({ shell, terminal });
     this.refit();
     _buf && terminal.writeln(_buf);

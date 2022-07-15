@@ -23,7 +23,7 @@ import { View, ViewType } from "../components/editor/View";
 import { Template } from "../components/NewProjectDialog";
 import dispatcher from "../dispatcher";
 import { Errors } from "../errors";
-import { Directory, File, Project, Application } from "../models";
+import { Directory, File, Project, Application, Action } from "../models";
 import { Service } from "../service";
 import appStore from "../stores/AppStore";
 import Group from "../utils/group";
@@ -34,6 +34,8 @@ export enum AppActionType {
   ADD_FILE_TO = "ADD_FILE_TO",
   LOAD_PROJECT = "LOAD_PROJECT",
   LOAD_APPLICATIONS = "LOAD_APPLICATIONS",
+  LOAD_ACTIONS = "LOAD_ACTIONS",
+  RUN_ACTION = "RUN_ACTION",
   CLEAR_PROJECT_MODIFIED = "CLEAR_PROJECT_MODIFIED",
   INIT_STORE = "INIT_STORE",
   UPDATE_FILE_NAME_AND_DESCRIPTION = "UPDATE_FILE_NAME_AND_DESCRIPTION",
@@ -78,6 +80,16 @@ export interface LoadProjectAction extends AppAction {
 export interface LoadApplicationAction extends AppAction {
   type: AppActionType.LOAD_APPLICATIONS;
   applications: Application[];
+}
+
+export interface LoadActionsAction extends AppAction {
+  type: AppActionType.LOAD_ACTIONS;
+  actions: Action[];
+}
+
+export interface RunActionAction extends AppAction {
+  type: AppActionType.RUN_ACTION;
+  action: Action;
 }
 
 export function loadProject(project: Project) {
@@ -218,6 +230,7 @@ export async function openProjectFiles(template: Template) {
   const newProject = new Project();
   await Service.loadFilesIntoProject(template.files, newProject, template.baseUrl);
   const applications = await Service.loadTemplateApplications(template.applications, template.baseUrl);
+  const actions = await Service.loadTemplateActions(template.actions, template.baseUrl);
   dispatcher.dispatch({
     type: AppActionType.LOAD_PROJECT,
     project: newProject,
@@ -226,6 +239,10 @@ export async function openProjectFiles(template: Template) {
     type: AppActionType.LOAD_APPLICATIONS,
     applications,
   } as LoadApplicationAction);
+  dispatcher.dispatch({
+    type: AppActionType.LOAD_ACTIONS,
+    actions: actions,
+  } as LoadActionsAction);
   if (newProject.getFile("README.md")) {
     openFiles([["README.md"]]);
   }
