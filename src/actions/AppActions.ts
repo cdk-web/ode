@@ -35,6 +35,7 @@ export enum AppActionType {
   LOAD_PROJECT = "LOAD_PROJECT",
   LOAD_APPLICATIONS = "LOAD_APPLICATIONS",
   LOAD_ACTIONS = "LOAD_ACTIONS",
+  RUN_ACTION = "RUN_ACTION",
   CLEAR_PROJECT_MODIFIED = "CLEAR_PROJECT_MODIFIED",
   INIT_STORE = "INIT_STORE",
   UPDATE_FILE_NAME_AND_DESCRIPTION = "UPDATE_FILE_NAME_AND_DESCRIPTION",
@@ -84,6 +85,11 @@ export interface LoadApplicationAction extends AppAction {
 export interface LoadActionsAction extends AppAction {
   type: AppActionType.LOAD_ACTIONS;
   actions: Action[];
+}
+
+export interface RunActionAction extends AppAction {
+  type: AppActionType.RUN_ACTION;
+  action: Action;
 }
 
 export function loadProject(project: Project) {
@@ -224,6 +230,7 @@ export async function openProjectFiles(template: Template) {
   const newProject = new Project();
   await Service.loadFilesIntoProject(template.files, newProject, template.baseUrl);
   const applications = await Service.loadTemplateApplications(template.applications, template.baseUrl);
+  const actions = await Service.loadTemplateActions(template.actions, template.baseUrl);
   dispatcher.dispatch({
     type: AppActionType.LOAD_PROJECT,
     project: newProject,
@@ -234,7 +241,7 @@ export async function openProjectFiles(template: Template) {
   } as LoadApplicationAction);
   dispatcher.dispatch({
     type: AppActionType.LOAD_ACTIONS,
-    actions: template.actions,
+    actions: actions,
   } as LoadActionsAction);
   if (newProject.getFile("README.md")) {
     openFiles([["README.md"]]);

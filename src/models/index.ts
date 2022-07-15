@@ -33,7 +33,7 @@ export {
   fileTypeForMimeType,
   getIconForFileType,
 } from "./types";
-export { Action } from "./Action";
+export { Action, ActionButton } from "./Action";
 export { Application } from "./Application";
 export { Problem } from "./Problem";
 export { Project } from "./Project";

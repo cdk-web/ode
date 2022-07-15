@@ -35,6 +35,7 @@ import {
   OpenFilesAction,
   OpenViewAction,
   PushStatusAction,
+  RunActionAction,
   SandboxRunAction,
   SetViewType,
   UpdateFileNameAndDescriptionAction,
@@ -58,6 +59,7 @@ import Group from "../utils/group";
 export class AppStore {
   private project: Project;
   private actions: Action[];
+  private action: Action;
   private applications: Application[];
   private output: File;
   private isContentModified: boolean;
@@ -79,6 +81,7 @@ export class AppStore {
   onTabsChange = new EventDispatcher("AppStore onTabsChange");
   onSandboxRun = new EventDispatcher("AppStore onSandboxRun");
   onDidChangeIsContentModified = new EventDispatcher("AppStore onDidChangeIsContentModified");
+  onRunAction = new EventDispatcher("AppStore onRunAction");
 
   constructor() {
     this.project = null;
@@ -110,6 +113,11 @@ export class AppStore {
   private loadActions(actions: Action[]) {
     this.actions = actions;
     this.onLoadActions.dispatch();
+  }
+
+  private runAction(action: Action) {
+    this.action = action;
+    this.onRunAction.dispatch();
   }
 
   private bindProject() {
@@ -170,6 +178,10 @@ export class AppStore {
 
   public getActions(): Action[] {
     return this.actions;
+  }
+
+  public getAction(): Action {
+    return this.action;
   }
 
   public getIsContentModified(): boolean {
@@ -389,6 +401,11 @@ export class AppStore {
       case AppActionType.LOAD_ACTIONS: {
         const { actions } = action as LoadActionsAction;
         this.loadActions(actions);
+        break;
+      }
+      case AppActionType.RUN_ACTION: {
+        const tmpAction = action as RunActionAction;
+        this.runAction(tmpAction.action);
         break;
       }
       case AppActionType.LOAD_APPLICATIONS: {

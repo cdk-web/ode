@@ -24,6 +24,7 @@ import fsExtras from "../utils/fsExtentions";
 import * as Mousetrap from "mousetrap";
 import * as React from "react";
 import {
+  AppActionType,
   addFileTo,
   build,
   closeTabs,
@@ -45,11 +46,11 @@ import {
   setViewType,
   splitGroup,
   updateFileNameAndDescription,
+  RunActionAction,
 } from "../actions/AppActions";
-import * as JsxParser from "react-jsx-parser";
-
+import dispatcher from "../dispatcher";
 import { notifyArcAboutFork, publishArc } from "../actions/ArcActions";
-import { Directory, File, FileType, ModelRef, Project } from "../models";
+import { ActionButton, Directory, File, FileType, ModelRef, Project } from "../models";
 import { Service } from "../service";
 import appStore from "../stores/AppStore";
 import { assert, layout, resetDOMSelection } from "../util";
@@ -266,16 +267,31 @@ export class App extends React.Component<AppProps, AppState> {
       const actions = appStore.getActions();
       const orgActions = this.makeToolbarButtons();
       for (const action of actions) {
+        let actionButton: ActionButton = action;
         let index = action.index || orgActions.length;
+        actionButton.isDisabled = this.toolbarButtonsAreDisabled();
         if (action.index === 0 || action.index < 0) {
           index = 0;
         }
         if (action.icon) {
-          const el = React.createElement(IconList[action.icon as string], {key: `Icon${index}`})
-          action.icon = el;
+          const el = React.createElement(IconList[action.icon], {key: `Icon${index}`})
+          actionButton.icon = el;
         }
+        if(action.onClick) {
+          const onClick = action.onClick.bind(null, this)
+          actionButton.onClick = onClick;
+        }
+        if(action.command) {
+          actionButton.onClick = function loadedCommandOnClick() {
+            dispatcher.dispatch({
+              type: AppActionType.RUN_ACTION,
+              action,
+            } as RunActionAction);
+          };
+        }
+
         // add one. Zero based index but AFTER the hamburger icon
-        orgActions.splice(index + 1, 0, action);
+        orgActions.splice(index + 1, 0, actionButton);
       }
       this.setState({ actions: orgActions });
     });
@@ -445,18 +461,7 @@ export class App extends React.Component<AppProps, AppState> {
   }
 
   makeToolbarButtons() {
-    const toolbarButtons: {
-      key?: string;
-      icon?: any;
-      title?: string;
-      label?: string;
-      target?: string;
-      isDisabled?: boolean;
-      href?: string;
-      rel?: string;
-      customClassName?: string;
-      onClick?: () => void;
-    }[] = [
+    const toolbarButtons: ActionButton[] = [
       {
         key: "ViewWorkspace",
         icon: <GoThreeBars />,
