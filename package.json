@@ -2,7 +2,7 @@
   "name": "webassembly-studio",
   "version": "1.0.0",
   "description": "Learn, Teach, Work and Play in the WebAssembly Studio",
-  "main": "index.js",
+  "main": "main.bundle.js",
   "scripts": {
     "build": "webpack --mode production && npm run templates",
     "build-watch": "webpack --watch --mode development",
@@ -103,6 +103,7 @@
     "@types/react-dom": "^16.0.11",
     "babel-loader": "^8.2.5",
     "base64-js": "^1.3.0",
+    "copy-webpack-plugin": "^6.4.1",
     "coveralls": "^3.0.2",
     "css-loader": "^0.28.11",
     "enzyme": "^3.7.0",

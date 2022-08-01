@@ -1,5 +1,6 @@
 const path = require("path");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = (env) => {
   const config = {
@@ -65,7 +66,17 @@ module.exports = (env) => {
       "react-dom": "ReactDOM",
       requirejs: "requirejs",
     },
-    plugins: [new MonacoWebpackPlugin()],
+    plugins: [
+      new MonacoWebpackPlugin(),
+      new CopyPlugin({
+        patterns: [
+          { from: "package.json", to: "package.json" },
+          { from: "style", to: "style" },
+          { from: "fonts", to: "fonts" },
+          { from: "lib", to: "lib" },
+        ],
+      }),
+    ],
     optimization: {
       splitChunks: {
         cacheGroups: {
