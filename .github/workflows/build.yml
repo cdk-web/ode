@@ -1,0 +1,37 @@
+name: Build
+
+on: push
+
+env:
+  NODEJS_VERSION: "16.x"
+  PYTHON_VERSION: "3.10"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up NodeJS ${{ env.NODEJS_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODEJS_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+      - name: Environment Information
+        run: npx envinfo
+      - name: Build And Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          node .github/patch-pjson.js
+          cd dist
+          npm publish --access public

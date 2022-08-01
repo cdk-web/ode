@@ -1,7 +1,7 @@
 {
-  "name": "webassembly-studio",
+  "name": "@cdk-web/ode",
   "version": "1.0.0",
-  "description": "Learn, Teach, Work and Play in the WebAssembly Studio",
+  "description": "React ODE component based on WaSDK's WebAssemblyStudio",
   "main": "main.bundle.js",
   "scripts": {
     "build": "webpack --mode development && npm run templates",
@@ -42,7 +42,7 @@
       "src/**/**.(ts|tsx|js)",
       "!src/**/**.d.ts"
     ],
-    "testURL": "https://webassembly.studio/"
+    "testURL": "http://localhost/"
   },
   "babel": {
     "presets": [
@@ -55,14 +55,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wasdk/WebAssemblyStudio.git"
+    "url": "git+https://github.com/cdk-web/ode.git"
   },
   "author": "Mozilla Foundation",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wasdk/WebAssemblyStudio/issues"
+    "url": "https://github.com/cdk-web/ode/issues"
   },
-  "homepage": "https://github.com/wasdk/WebAssemblyStudio",
+  "homepage": "https://github.com/cdk-web/ode",
   "dependencies": {
     "@types/flux": "^3.1.8",
     "@types/jszip": "^3.1.4",
