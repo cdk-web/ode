@@ -41,6 +41,7 @@ process.stdout = {
 globalThis.fs = fs;
 const globals = {
   fs,
+  fsEvents,
   os,
   path,
   util,

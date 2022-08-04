@@ -25,6 +25,11 @@ function writeFile(args: any[]) {
       debugger;
     }
     const file = ensureExplorerFile(args);
+    if(!file) {
+      // happens when you write outside of the project explorer
+      debugger;
+      return;
+    }
     file.data = args[1];
   }
 }
