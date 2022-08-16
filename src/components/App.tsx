@@ -221,7 +221,7 @@ export class App extends React.Component<AppProps, AppState> {
     fs.mkdirpSync("/tmp");
     fsExtras();
   }
-  private async initializeProject() {
+  private initializeProject() {
     initStore();
     this.setState({
       project: appStore.getProject(),
@@ -266,12 +266,13 @@ export class App extends React.Component<AppProps, AppState> {
     appStore.onLoadActions.register(() => {
       const actions = appStore.getActions();
       const orgActions = this.makeToolbarButtons();
-      for (const action of actions) {
+      for (const [index, action] of actions.entries()) {
         let actionButton: ActionButton = action;
-        let index = action.index || orgActions.length;
+        let position = action.index || orgActions.length;
         actionButton.isDisabled = this.toolbarButtonsAreDisabled();
+        actionButton.key = actionButton.key || `Action${index}`
         if (action.index === 0 || action.index < 0) {
-          index = 0;
+          position = 0;
         }
         if (action.icon) {
           const el = React.createElement(IconList[action.icon], {key: `Icon${index}`})
@@ -291,7 +292,7 @@ export class App extends React.Component<AppProps, AppState> {
         }
 
         // add one. Zero based index but AFTER the hamburger icon
-        orgActions.splice(index + 1, 0, actionButton);
+        orgActions.splice(position + 1, 0, actionButton);
       }
       this.setState({ actions: orgActions });
     });

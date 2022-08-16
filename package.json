@@ -1,10 +1,10 @@
 {
-  "name": "webassembly-studio",
+  "name": "@cdk-web/ode",
   "version": "1.0.0",
-  "description": "Learn, Teach, Work and Play in the WebAssembly Studio",
-  "main": "index.js",
+  "description": "React ODE component based on WaSDK's WebAssemblyStudio",
+  "main": "main.bundle.js",
   "scripts": {
-    "build": "webpack --mode production && npm run templates",
+    "build": "webpack --mode development && npm run templates",
     "build-watch": "webpack --watch --mode development",
     "dev-server": "npm run templates && webpack-dev-server -d --https --port 28443",
     "test": "webpack --mode production && node bin/check-bundle-size.js && npm run jest && npm run tslint",
@@ -42,7 +42,7 @@
       "src/**/**.(ts|tsx|js)",
       "!src/**/**.d.ts"
     ],
-    "testURL": "https://webassembly.studio/"
+    "testURL": "http://localhost/"
   },
   "babel": {
     "presets": [
@@ -55,23 +55,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wasdk/WebAssemblyStudio.git"
+    "url": "git+https://github.com/cdk-web/ode.git"
   },
   "author": "Mozilla Foundation",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wasdk/WebAssemblyStudio/issues"
+    "url": "https://github.com/cdk-web/ode/issues"
   },
-  "homepage": "https://github.com/wasdk/WebAssemblyStudio",
+  "homepage": "https://github.com/cdk-web/ode",
   "dependencies": {
-    "@types/flux": "^3.1.8",
-    "@types/jszip": "^3.1.4",
-    "@types/minimatch": "^3.0.3",
-    "@types/mousetrap": "^1.6.0",
-    "@types/pako": "^1.0.0",
-    "@types/react-icons": "^2.2.6",
-    "@types/react-modal": "^3.2.1",
-    "@types/xterm": "^3.0.0",
+  },
+  "devDependencies": {
     "cassowary": "0.0.2",
     "flux": "^3.1.3",
     "jszip": "^3.1.5",
@@ -86,9 +80,7 @@
     "react-modal": "^3.6.1",
     "request": "^2.88.0",
     "tar-js": "^0.3.0",
-    "tslint-react": "^3.6.0"
-  },
-  "devDependencies": {
+    "tslint-react": "^3.6.0",
     "@babel/core": "^7.18.2",
     "@babel/plugin-syntax-jsx": "^7.17.12",
     "@babel/preset-env": "^7.18.2",
@@ -96,6 +88,14 @@
     "@types/base64-js": "^1.2.5",
     "@types/enzyme": "^3.1.15",
     "@types/expect-puppeteer": "^2.2.4",
+    "@types/flux": "^3.1.8",
+    "@types/jszip": "^3.1.4",
+    "@types/minimatch": "^3.0.3",
+    "@types/mousetrap": "^1.6.0",
+    "@types/pako": "^1.0.0",
+    "@types/react-icons": "^2.2.6",
+    "@types/react-modal": "^3.2.1",
+    "@types/xterm": "^3.0.0",
     "@types/jest": "^22.1.4",
     "@types/jest-environment-puppeteer": "^2.2.1",
     "@types/puppeteer": "^1.10.1",
@@ -103,6 +103,7 @@
     "@types/react-dom": "^16.0.11",
     "babel-loader": "^8.2.5",
     "base64-js": "^1.3.0",
+    "copy-webpack-plugin": "^6.4.1",
     "coveralls": "^3.0.2",
     "css-loader": "^0.28.11",
     "enzyme": "^3.7.0",

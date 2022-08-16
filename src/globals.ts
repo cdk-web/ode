@@ -39,10 +39,22 @@ process.stdout = {
 
 // @ts-ignore
 globalThis.fs = fs;
-export default {
+const globals = {
   fs,
+  fsEvents,
   os,
   path,
   util,
   process,
-};
+}
+export default globals;
+
+// @ts-ignore
+if( typeof define === 'function') {
+  for(const [key, value] of Object.entries(globals)) {
+    // @ts-ignore
+    define(key, () => {
+      return value;
+    });
+  }
+}
