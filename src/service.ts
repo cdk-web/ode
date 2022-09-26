@@ -448,7 +448,10 @@ export class Service {
     );
   }
 
-  static async loadFilesIntoProject(files: IFiddleFile[], project: Project, base: URL = null): Promise<any> {
+  static async loadFilesIntoProject(files: IFiddleFile[] | string, project: Project, base: URL = null): Promise<any> {
+    if(typeof files === 'string') {
+      files = await Service.requireTemplateFiles(files, base)
+    }
     for (const f of files) {
       const type = fileTypeFromFileName(f.name);
       const file = project.newFile(f.name, type, false);
@@ -469,6 +472,17 @@ export class Service {
       }
       file.setData(data);
     }
+  }
+
+  static async requireTemplateFiles(loaderPath: string, base: URL = null): Promise<IFiddleFile[]> {
+    const requirejs = require("requirejs");
+    const module = new URL(loaderPath, base).pathname;
+    const files = await new Promise((resolve) => {
+      requirejs(module, (...files: IFiddleFile[]) => {
+        resolve(files);
+      });
+    });
+    return files as IFiddleFile[];
   }
 
   static async loadTemplateActions(actions: Action[], base: URL = null): Promise<Action[]> {

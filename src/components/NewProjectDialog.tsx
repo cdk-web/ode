@@ -32,7 +32,7 @@ import { ListBox, ListItem } from "./Widgets";
 export interface Template {
   name: string;
   description: string;
-  files: IFiddleFile[];
+  files: IFiddleFile[] | string;
   baseUrl: URL;
   icon: string;
   applications: string[];
