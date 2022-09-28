@@ -7,7 +7,21 @@ export const fs = new Proxy(memfs, {
     return (...args: any[]) => {
       // @ts-ignore
       fsEvents.emit(prop, args);
-      return Reflect.get(target, prop, receiver).apply(target, args);
+      try{
+        return Reflect.get(target, prop, receiver).apply(target, args);
+      } catch (e) {
+        if(e.name === "TypeError" && e.message === "callback must be a function") {
+          // @ts-ignore
+          const syncProp = `${prop}Sync`;
+          // @ts-ignore
+          if(!target[syncProp]) {
+            // @ts-ignore
+            throw new Error('implicit coersion to synchronous filesystem API failed of ' + prop)
+          }
+          return Reflect.get(target, syncProp, receiver).apply(target, args);
+        }
+        throw e;
+      }
     };
   },
 });
