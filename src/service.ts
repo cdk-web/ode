@@ -478,7 +478,11 @@ export class Service {
     const requirejs = require("requirejs");
     const module = new URL(loaderPath, base).pathname;
     const files = await new Promise((resolve) => {
-      requirejs([module], (files: IFiddleFile[]) => {
+      requirejs([module], (files: IFiddleFile[] | Promise<IFiddleFile[]>) => {
+        // @ts-ignore
+        if(typeof files === "object" && typeof files.then === "function") {
+          return (files as Promise<IFiddleFile[]>).then(resolve)
+        }
         resolve(files);
       });
     });
