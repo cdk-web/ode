@@ -4,25 +4,34 @@ import { fs as memfs } from "memfs";
 export const fsEvents = new EventEmitter();
 export const fs = new Proxy(memfs, {
   get(target, prop, receiver) {
-    return (...args: any[]) => {
-      // @ts-ignore
-      fsEvents.emit(prop, args);
-      try{
-        return Reflect.get(target, prop, receiver).apply(target, args);
-      } catch (e) {
-        if(e.name === "TypeError" && e.message === "callback must be a function") {
-          // @ts-ignore
-          const syncProp = `${prop}Sync`;
-          // @ts-ignore
-          if(!target[syncProp]) {
-            // @ts-ignore
-            throw new Error('implicit coersion to synchronous filesystem API failed of ' + prop)
+    const value = Reflect.get(target, prop, receiver);
+    if (typeof value === "function") {
+      return (...args: any[]) => {
+        fsEvents.emit(prop as any, args);
+        try {
+          return value.apply(target, args);
+        } catch (e) {
+          if (
+            typeof prop === "string" &&
+            e.name === "TypeError" &&
+            e.message === "callback must be a function"
+          ) {
+            const syncProp = `${prop}Sync`;
+            if (
+              Object.keys(target).includes(syncProp) &&
+              typeof (target as any)[syncProp] === "function"
+            ) {
+              return Reflect.get(target, syncProp, receiver).apply(
+                target,
+                args
+              );
+            }
           }
-          return Reflect.get(target, syncProp, receiver).apply(target, args);
+          throw e;
         }
-        throw e;
-      }
-    };
+      };
+    }
+    return value;
   },
 });
 
@@ -60,12 +69,12 @@ const globals = {
   path,
   util,
   process,
-}
+};
 export default globals;
 
 // @ts-ignore
-if( typeof define === 'function') {
-  for(const [key, value] of Object.entries(globals)) {
+if (typeof define === "function") {
+  for (const [key, value] of Object.entries(globals)) {
     // @ts-ignore
     define(key, () => {
       return value;
