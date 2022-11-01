@@ -32,7 +32,7 @@ import { ListBox, ListItem } from "./Widgets";
 export interface Template {
   name: string;
   description: string;
-  files: IFiddleFile[];
+  files: IFiddleFile[] | string;
   baseUrl: URL;
   icon: string;
   applications: string[];
@@ -51,6 +51,7 @@ export class NewProjectDialog extends React.Component<
     name: string;
     template: Template;
     templates: Template[];
+    loading: boolean;
   }
 > {
   constructor(props: any) {
@@ -60,6 +61,7 @@ export class NewProjectDialog extends React.Component<
       description: "",
       name: "",
       templates: [],
+      loading: true,
     };
   }
   async componentDidMount() {
@@ -84,9 +86,13 @@ export class NewProjectDialog extends React.Component<
         actions,
       });
     }
-
+    if(templates.length === 1) {
+      this.props.onCreate && this.props.onCreate(templates[0]);
+      return;
+    }
     this.setState({ templates });
     this.setTemplate(templates[0]);
+    this.setState({loading: false})
   }
   async setTemplate(template: Template) {
     const description = await Service.compileMarkdownToHtml(template.description);
@@ -95,7 +101,7 @@ export class NewProjectDialog extends React.Component<
   render() {
     return (
       <ReactModal
-        isOpen={this.props.isOpen}
+        isOpen={this.props.isOpen && !this.state.loading}
         contentLabel="Create New Project"
         className="modal show-file-icons"
         overlayClassName="overlay"

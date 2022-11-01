@@ -4,11 +4,34 @@ import { fs as memfs } from "memfs";
 export const fsEvents = new EventEmitter();
 export const fs = new Proxy(memfs, {
   get(target, prop, receiver) {
-    return (...args: any[]) => {
-      // @ts-ignore
-      fsEvents.emit(prop, args);
-      return Reflect.get(target, prop, receiver).apply(target, args);
-    };
+    const value = Reflect.get(target, prop, receiver);
+    if (typeof value === "function") {
+      return (...args: any[]) => {
+        fsEvents.emit(prop as any, args);
+        try {
+          return value.apply(target, args);
+        } catch (e) {
+          if (
+            typeof prop === "string" &&
+            e.name === "TypeError" &&
+            e.message === "callback must be a function"
+          ) {
+            const syncProp = `${prop}Sync`;
+            if (
+              Object.keys(target).includes(syncProp) &&
+              typeof (target as any)[syncProp] === "function"
+            ) {
+              return Reflect.get(target, syncProp, receiver).apply(
+                target,
+                args
+              );
+            }
+          }
+          throw e;
+        }
+      };
+    }
+    return value;
   },
 });
 
@@ -46,12 +69,12 @@ const globals = {
   path,
   util,
   process,
-}
+};
 export default globals;
 
 // @ts-ignore
-if( typeof define === 'function') {
-  for(const [key, value] of Object.entries(globals)) {
+if (typeof define === "function") {
+  for (const [key, value] of Object.entries(globals)) {
     // @ts-ignore
     define(key, () => {
       return value;
